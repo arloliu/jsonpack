@@ -1,0 +1,99 @@
+{
+    "category": 1,
+    "ips": [
+        "192.168.1.1",
+        "192.168.1.2",
+        "192.168.1.3",
+        "192.168.1.4",
+        "192.168.1.5",
+        "192.168.1.6",
+        "192.168.1.7",
+        "192.168.1.8",
+        "192.168.1.9",
+        "192.168.1.10",
+        "192.168.1.11",
+        "192.168.1.12",
+        "192.168.1.13",
+        "192.168.1.14",
+        "192.168.1.15",
+        "192.168.1.16",
+        "192.168.1.17",
+        "192.168.1.18",
+        "192.168.1.19",
+        "192.168.1.20",
+        "192.168.1.21",
+        "192.168.1.22",
+        "192.168.1.23",
+        "192.168.1.24",
+        "192.168.1.25",
+        "192.168.1.26",
+        "192.168.1.27",
+        "192.168.1.28",
+        "192.168.1.29",
+        "192.168.1.30"
+    ],
+    "positions": [
+        100,
+        101,
+        200,
+        201
+    ],
+    "user": {
+        "name": "test",
+        "email": "test@example.com",
+        "currentStatus": {
+            "group": "admin_group",
+            "msg": "test message"
+        }
+    },
+    "accounts": [
+        {
+            "name": "test1",
+            "email": "test1@example.com",
+            "currentStatus": {
+                "group": "vip",
+                "msg": "test message"
+            }
+        },
+        {
+            "name": "test2",
+            "email": "test2@example.com",
+            "currentStatus": {
+                "group": "vip",
+                "msg": "test message"
+            }
+        },
+        {
+            "name": "test3",
+            "email": "test3@example.com",
+            "currentStatus": {
+                "group": "normal",
+                "msg": "offline"
+            }
+        },
+        {
+            "name": "test4",
+            "email": "test4@example.com",
+            "currentStatus": {
+                "group": "normal",
+                "msg": "offline"
+            }
+        },
+        {
+            "name": "test2",
+            "email": "test2@example.com",
+            "currentStatus": {
+                "group": "normal",
+                "msg": "test message"
+            }
+        },
+        {
+            "name": "test5",
+            "email": "test5@example.com",
+            "currentStatus": {
+                "group": "normal",
+                "msg": "test message"
+            }
+        }
+    ]
+}

@@ -1,0 +1,70 @@
+{
+    "name": "John Doe",
+    "sex": 2,
+    "nicknames": [
+        "nickname 1",
+        "nickname 2",
+        "nickname 3",
+        "nickname 4",
+        "nickname 5",
+        "nickname 6",
+        "nickname 7",
+        "nickname 8",
+        "nickname 9",
+        "nickname 10"
+    ],
+    "maps": {
+        "mapName": "test map",
+        "location": "test location"
+    },
+    "phones": [
+        {
+            "area": 800,
+            "number": "900000000"
+        },
+        {
+            "area": 801,
+            "number": "900000001"
+        },
+        {
+            "area": 802,
+            "number": "900000002"
+        },
+        {
+            "area": 803,
+            "number": "900000003"
+        },
+        {
+            "area": 804,
+            "number": "900000004"
+        },
+        {
+            "area": 805,
+            "number": "900000005"
+        },
+        {
+            "area": 806,
+            "number": "900000006"
+        },
+        {
+            "area": 807,
+            "number": "900000007"
+        },
+        {
+            "area": 808,
+            "number": "900000008"
+        },
+        {
+            "area": 809,
+            "number": "900000009"
+        },
+        {
+            "area": 810,
+            "number": "900000010"
+        }
+   ],
+    "address": {
+        "area": 806,
+        "address": "address text"
+    }
+}

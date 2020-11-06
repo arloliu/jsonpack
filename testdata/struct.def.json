@@ -1,0 +1,40 @@
+{
+	"type": "object",
+	"properties": {
+		"name": {"type": "string"},
+		"sex": {"type": "uint32le"},
+		"nicknames": {
+			"type": "array",
+			"items": {"type": "string"}
+		},
+		"maps": {
+			"type": "object",
+			"properties": {
+				"mapName": {"type": "string"},
+				"location": {"type": "string"}
+			},
+			"order": ["mapName", "location"]
+		},
+		"phones": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"area": {"type": "uint32le"},
+					"number": {"type": "string"}
+				},
+				"order": ["area", "number"]
+			}
+		},
+		"address": {
+			"type": "object",
+			"properties": {
+				"area": {"type": "uint32le"},
+				"address": {"type": "string"}
+			},
+			"order": ["area", "address"]
+		}
+
+	},
+	"order": ["name", "sex", "nicknames", "maps", "phones", "address"]
+}

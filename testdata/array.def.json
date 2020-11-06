@@ -1,0 +1,18 @@
+{
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "num1": {"type": "int32le"},
+            "num2": {"type": "float64be"},
+            "obj": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"}
+                },
+                "order": ["name"]
+            }
+        },
+        "order": ["num1", "num2", "obj"]
+    }
+}

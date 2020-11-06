@@ -1,0 +1,28 @@
+syntax = "proto3";
+package testdata;
+
+option go_package = "github.com/arloliu/jsonpack/testdata";
+
+message AddressPb {
+    uint32 area = 1;
+    string address = 2;
+}
+
+message MapInfoPb {
+    string mapName = 1;
+    string location = 2;
+}
+
+message PhoneNumberPb {
+    uint32 area = 1;
+    string number = 2;
+}
+
+message TestStructPb {
+    string name = 1;
+    uint32  sex = 2;
+    repeated string nicknames = 3;
+    MapInfoPb maps = 4;
+    repeated PhoneNumberPb phones = 5;
+    AddressPb address = 6;
+}

@@ -1,0 +1,23 @@
+syntax = "proto3";
+package testdata;
+
+option go_package = "github.com/arloliu/jsonpack/testdata";
+
+message ComplextStatusPb {
+    string group = 1;
+    string msg = 2;
+}
+
+message ComplexUserPb {
+    string name = 1;
+    string email = 2;
+    ComplextStatusPb currentStatus = 3;
+}
+
+message ComplextPb {
+    uint32 category = 1;
+    repeated string ips = 2;
+    repeated uint32 positions = 3;
+    ComplexUserPb user = 4;
+    repeated ComplexUserPb accounts = 5;
+}
