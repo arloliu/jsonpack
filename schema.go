@@ -23,7 +23,6 @@ type Schema struct {
 	rawData interface{}
 	// textData stores text json format of schema defintion
 	textData      []byte
-	manager       *schemaManager
 	rootOp        *operation
 	structOpCache *sync.Map
 	encodeBufSize int64
@@ -50,13 +49,14 @@ func (s *Schema) GetSchemaDef() (*SchemaDef, error) {
 	return &schDef, nil
 }
 
-// GetSchemaDefText returns JSON format document of schema definition.
-func (s *Schema) GetSchemaDefText(schemaName string) []byte {
+// GetSchemaDefText returns JSON format document of schema definition,
+// which presetned as []byte.
+func (s *Schema) GetSchemaDefText() []byte {
 	return s.textData
 }
 
-// create a schema instance by raw schema definition
-func newSchema(manager *schemaManager, name string, v ...interface{}) *Schema {
+// newSchema returns a schema instance
+func newSchema(name string, v ...interface{}) *Schema {
 	var rawData interface{}
 	var byteOrder ByteOrder = LittleEndian
 	if len(v) == 1 {
@@ -70,7 +70,6 @@ func newSchema(manager *schemaManager, name string, v ...interface{}) *Schema {
 		Name:          name,
 		rawData:       rawData,
 		textData:      nil,
-		manager:       manager,
 		rootOp:        newOperation("", &nullOp{}, nullOpType),
 		structOpCache: &sync.Map{},
 		encodeBufSize: 512,

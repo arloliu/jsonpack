@@ -41,52 +41,6 @@ func TestComplexAddSchemaFromStruct(t *testing.T) {
 	}
 }
 
-func TestAddSchema(t *testing.T) {
-	schDef := `
-	{
-		"type": "object",
-		"properties": {
-			"name": {"type": "string"},
-			"area": {"type": "uint32le"}
-		},
-		"order": ["name", "area"]
-	}
-	`
-	_, err := jsonPack.AddSchema("info", schDef)
-	if err != nil {
-		fmt.Printf("AddSchema info err: %v\n", err)
-		os.Exit(1)
-	}
-
-	schDefMap := map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"name": map[string]interface{}{"type": "string"},
-			"area": map[string]interface{}{"type": "uint32le"},
-		},
-		"order": []string{"name", "area"},
-	}
-	_, err = jsonPack.AddSchema("info", schDefMap)
-	if err != nil {
-		fmt.Printf("AddSchema info err: %v\n", err)
-		os.Exit(1)
-	}
-
-	schDefSt := SchemaDef{
-		Type: "object",
-		Properties: map[string]*SchemaDef{
-			"name": {Type: "string"},
-			"area": {Type: "uint32le"},
-		},
-		Order: []string{"name", "area"},
-	}
-	_, err = jsonPack.AddSchema("schdef_info", schDefSt)
-	if err != nil {
-		fmt.Printf("AddSchema info err: %v\n", err)
-		os.Exit(1)
-	}
-}
-
 func TestStructEncode(t *testing.T) {
 	encData, err := jsonPack.Encode("testStruct", &testdata.StructData)
 	if err != nil {
