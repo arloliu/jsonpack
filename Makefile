@@ -11,7 +11,7 @@ endif
 PKGNAME = github.com/arloliu/jsonpack
 .PHONY: test benchmark cpu-pprof mem-pprof protoc
 test:
-	go test $(PKGNAME)/internal/buffer -v $(TESTFLAG) -run $(TARGET)
+	go test $(PKGNAME)/buffer -v $(TESTFLAG) -run $(TARGET)
 	go test $(PKGNAME) -v $(TESTFLAG) -run $(TARGET)
 
 

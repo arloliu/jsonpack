@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	ibuf "github.com/arloliu/jsonpack/internal/buffer"
+	ibuf "github.com/arloliu/jsonpack/buffer"
 
 	"github.com/modern-go/reflect2"
 )

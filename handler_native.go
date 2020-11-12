@@ -3,7 +3,7 @@ package jsonpack
 import (
 	"unsafe"
 
-	ibuf "github.com/arloliu/jsonpack/internal/buffer"
+	ibuf "github.com/arloliu/jsonpack/buffer"
 )
 
 type stringOp struct{}
