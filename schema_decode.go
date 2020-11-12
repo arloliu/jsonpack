@@ -53,25 +53,43 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 	switch d := v.(type) {
 	case map[string]interface{}:
 		_, err = s.decodeDynamic(buf, s.rootOp, d)
+		if err != nil {
+			return err
+		}
 
 	case []map[string]interface{}:
 		_, err = s.decodeDynamic(buf, s.rootOp, d)
+		if err != nil {
+			return err
+		}
 
 	case []interface{}:
 		_, err = s.decodeDynamic(buf, s.rootOp, d)
+		if err != nil {
+			return err
+		}
 
 	case *[]interface{}:
 		// pass pointer of slice instead of dereferenced value due to slice is not reference type
 		_, err = s.decodeDynamic(buf, s.rootOp, d)
+		if err != nil {
+			return err
+		}
 
 	case *map[string]interface{}:
 		_, err = s.decodeDynamic(buf, s.rootOp, *d)
+		if err != nil {
+			return err
+		}
 
 	case *[]map[string]interface{}:
 		_, err = s.decodeDynamic(buf, s.rootOp, *d)
+		if err != nil {
+			return err
+		}
 
 	case *interface{}:
-		err = s.decode(data, *d, false)
+		return s.decode(data, *d, false)
 
 	default:
 		switch vKind {
@@ -79,10 +97,9 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 			var sop *structOperation
 			sop, err = s.getStructOperation(vType, v)
 			if err != nil {
-				err = &DecodeError{s.Name, err}
-				return
+				return &DecodeError{s.Name, err}
 			}
-			err = s.decodeStruct(buf, sop, v)
+			return s.decodeStruct(buf, sop, v)
 
 		case reflect.Slice:
 			sliceType := vType.(*reflect2.UnsafeSliceType)
@@ -91,15 +108,13 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 				var sop *structOperation
 				sop, err = s.getStructOperation(vType, d)
 				if err != nil {
-					err = &DecodeError{s.Name, err}
-					return
+					return &DecodeError{s.Name, err}
 				}
-				err = s.decodeStruct(buf, sop, d)
+				return s.decodeStruct(buf, sop, d)
 			} else if vType.Kind() == reflect.Map {
 				_, err = s.decodeDynamic(buf, s.rootOp, d)
 			} else {
-				err = &DecodeError{s.Name, &WrongTypeError{vType.String()}}
-				return
+				return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
 			}
 
 		case reflect.Array:
@@ -109,12 +124,14 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 				var sop *structOperation
 				sop, err = s.getStructOperation(vType, d)
 				if err != nil {
-					err = &DecodeError{s.Name, err}
-					return
+					return &DecodeError{s.Name, err}
 				}
-				err = s.decodeStruct(buf, sop, d)
+				return s.decodeStruct(buf, sop, d)
 			} else if vType.Kind() == reflect.Map {
 				_, err = s.decodeDynamic(buf, s.rootOp, d)
+				if err != nil {
+					return err
+				}
 			} else {
 				return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
 			}
@@ -124,8 +141,7 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 			return s.decode(data, elemType.Indirect(v), false)
 
 		default:
-			err = &DecodeError{s.Name, &WrongTypeError{vType.String()}}
-			return
+			return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
 		}
 	}
 	if err != nil {

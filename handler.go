@@ -68,17 +68,17 @@ type structOp struct{}
 
 func (p *structOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr unsafe.Pointer) error {
 	var err error
-	var filedPtr unsafe.Pointer
+	var fieldPtr unsafe.Pointer
 
 	for _, op := range opNode.children {
-		filedPtr = op.field.UnsafeGet(ptr)
+		fieldPtr = op.field.UnsafeGet(ptr)
 
 		if op.isPtrType {
 			ptrType := (op.field.Type()).(*reflect2.UnsafePtrType)
 			elemType := ptrType.Elem()
 
 			// check if current pointer of field is null
-			if *((*unsafe.Pointer)(filedPtr)) == nil {
+			if derefPtr(fieldPtr) == nil {
 				//pointer to null, need to allocate memory to hold the value
 				newPtr := elemType.UnsafeNew()
 				err = op.handler.decodeStruct(buf, op, newPtr)
@@ -86,16 +86,16 @@ func (p *structOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr u
 					return err
 				}
 				// assign new allocated data back to current field pointer
-				*((*unsafe.Pointer)(filedPtr)) = newPtr
+				assignPtr(fieldPtr, newPtr)
 			} else {
 				//reuse existing instance
-				err = op.handler.decodeStruct(buf, op, *((*unsafe.Pointer)(filedPtr)))
+				err = op.handler.decodeStruct(buf, op, derefPtr(fieldPtr))
 				if err != nil {
 					return err
 				}
 			}
 		} else {
-			err = op.handler.decodeStruct(buf, op, filedPtr)
+			err = op.handler.decodeStruct(buf, op, fieldPtr)
 			if err != nil {
 				return err
 			}
@@ -107,17 +107,17 @@ func (p *structOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr u
 }
 func (p *structOp) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr unsafe.Pointer) error {
 	var err error
-	var filedPtr unsafe.Pointer
+	var fieldPtr unsafe.Pointer
 
 	for _, op := range opNode.children {
-		filedPtr = op.field.UnsafeGet(ptr)
+		fieldPtr = op.field.UnsafeGet(ptr)
 		// dereference pointer
 		if op.isPtrType {
 			// logger.Debugf("encodeStruct: op is pointer type, field name: %v", op.field.Name())
-			filedPtr = *((*unsafe.Pointer)(filedPtr))
+			fieldPtr = derefPtr(fieldPtr)
 		}
 
-		err = op.handler.encodeStruct(buf, op, filedPtr)
+		err = op.handler.encodeStruct(buf, op, fieldPtr)
 		if err != nil {
 			return err
 		}
@@ -150,9 +150,6 @@ func (p *objectOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr u
 
 // encode dynamic map type in struct
 func (p *objectOp) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr unsafe.Pointer) error {
-	// schema := (opNode.handler.(*objectOp)).schema
-	// opInstance := opNode.opInstance
-
 	return p.encodeDynamic(buf, opNode.opInstance, opNode.opType.UnsafeIndirect(ptr))
 }
 
@@ -256,7 +253,7 @@ func (p *sliceOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr un
 		var newPtr unsafe.Pointer = itemPtr
 		if itemOp.isPtrType {
 			// allocate new struct instance
-			if *((*unsafe.Pointer)(itemPtr)) == nil {
+			if derefPtr(itemPtr) == nil {
 				ptrType := (itemOp.opType).(*reflect2.UnsafePtrType)
 				elemType := ptrType.Elem()
 				newPtr = elemType.UnsafeNew()
@@ -268,7 +265,7 @@ func (p *sliceOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr un
 		}
 
 		if itemPtr != newPtr {
-			*((*unsafe.Pointer)(itemPtr)) = newPtr
+			assignPtr(itemPtr, newPtr)
 		}
 	}
 	return nil
@@ -980,6 +977,16 @@ func getPropData(opNode *operation, d interface{}) interface{} {
 	}
 
 	return nil
+}
+
+func derefPtr(ptr unsafe.Pointer) unsafe.Pointer {
+	return *(*unsafe.Pointer)(ptr)
+}
+
+func assignPtr(dst, src unsafe.Pointer) {
+	if dst != src {
+		*(*unsafe.Pointer)(dst) = src
+	}
 }
 
 func _encodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{}) error {
