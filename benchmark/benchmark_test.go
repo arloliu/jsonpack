@@ -32,7 +32,7 @@ func init() {
 
 }
 
-func BenchmarkStruct_Protobuf_Encode(b *testing.B) {
+func BenchmarkSimple_Protobuf_Struct_Encode(b *testing.B) {
 	st := testdata.TestStructPb{}
 	err := jsonPacker.Decode("testStruct", testdata.StructExpData, &st)
 	if err != nil {
@@ -45,7 +45,7 @@ func BenchmarkStruct_Protobuf_Encode(b *testing.B) {
 	}
 }
 
-func BenchmarkStruct_JSONPACK_Encode(b *testing.B) {
+func BenchmarkSimple_JSONPACK_Struct_Encode(b *testing.B) {
 	sch := jsonPacker.GetSchema("testStruct")
 	buf := make([]byte, 1024)
 	b.ResetTimer()
@@ -54,27 +54,27 @@ func BenchmarkStruct_JSONPACK_Encode(b *testing.B) {
 	}
 }
 
-func BenchmarkStruct_JSON_Encode(b *testing.B) {
+func BenchmarkSimple_JSON_Struct_Encode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(&testdata.StructData)
 	}
 }
 
-func BenchmarkStruct_Jsoniter_Encode(b *testing.B) {
+func BenchmarkSimple_Jsoniter_Struct_Encode(b *testing.B) {
 	j := jsoniter.ConfigDefault
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		j.Marshal(&testdata.StructData)
 	}
 }
-func BenchmarkStruct_GOCCY_Encode(b *testing.B) {
+func BenchmarkSimple_GOCCY_Struct_Encode(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		goccy.Marshal(&testdata.StructData)
 	}
 }
 
-func BenchmarkComplex_JSONPACK_Encode(b *testing.B) {
+func BenchmarkComplex_JSONPACK_Map_Encode(b *testing.B) {
 	var err error
 	sch := jsonPacker.GetSchema("complex")
 	b.ResetTimer()
@@ -86,25 +86,25 @@ func BenchmarkComplex_JSONPACK_Encode(b *testing.B) {
 	}
 }
 
-func BenchmarkComplex_JSON_Encode(b *testing.B) {
+func BenchmarkComplex_JSON_Map_Encode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		json.Marshal(&testdata.ComplexData)
 	}
 }
 
-func BenchmarkComplex_Jsoniter_Encode(b *testing.B) {
+func BenchmarkComplex_Jsoniter_Map_Encode(b *testing.B) {
 	j := jsoniter.ConfigDefault
 	for i := 0; i < b.N; i++ {
 		j.Marshal(&testdata.ComplexData)
 	}
 }
 
-func BenchmarkComplex_GOCCY_Encode(b *testing.B) {
+func BenchmarkComplex_GOCCY_Map_Encode(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		goccy.Marshal(&testdata.ComplexData)
 	}
 }
-func BenchmarkComplex_Protobuf_Encode(b *testing.B) {
+func BenchmarkComplex_Protobuf_Struct_Encode(b *testing.B) {
 	var err error
 	st := testdata.ComplextPb{}
 	err = jsonPacker.Decode("complex", testdata.ComplexExpData, &st)
@@ -150,7 +150,7 @@ func BenchmarkComplex_GOCCY_Struct_Encode(b *testing.B) {
 	}
 }
 
-func BenchmarkComplex_JSONPACK_Decode(b *testing.B) {
+func BenchmarkComplex_JSONPACK_Map_Decode(b *testing.B) {
 	m := make(map[string]interface{})
 	sch := jsonPacker.GetSchema("complex")
 	b.ResetTimer()
@@ -162,14 +162,14 @@ func BenchmarkComplex_JSONPACK_Decode(b *testing.B) {
 	}
 }
 
-func BenchmarkComplex_JSON_Decode(b *testing.B) {
+func BenchmarkComplex_JSON_Map_Decode(b *testing.B) {
 	m := make(map[string]interface{})
 	for i := 0; i < b.N; i++ {
 		json.Unmarshal(testdata.ComplexRawData, &m)
 	}
 }
 
-func BenchmarkComplex_Jsoniter_Decode(b *testing.B) {
+func BenchmarkComplex_Jsoniter_Map_Decode(b *testing.B) {
 	j := jsoniter.ConfigDefault
 	m := make(map[string]interface{})
 	for i := 0; i < b.N; i++ {
@@ -177,7 +177,7 @@ func BenchmarkComplex_Jsoniter_Decode(b *testing.B) {
 	}
 }
 
-func BenchmarkComplex_GOCCY_Decode(b *testing.B) {
+func BenchmarkComplex_GOCCY_Map_Decode(b *testing.B) {
 	m := make(map[string]interface{})
 	for i := 0; i < b.N; i++ {
 		goccy.Unmarshal(testdata.ComplexRawData, &m)
