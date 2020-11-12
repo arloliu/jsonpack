@@ -15,13 +15,13 @@ func NewJSONPack() *JSONPack {
 /*
 AddSchema will compile schema definition and stores compiled result in internal schema manager.
 
-It's a variadic function which accept three types of input parameters in the following.
+It's a variadic function which accept two types of input parameters in the following.
 
 AddSchema(schemaName string, v interface{})
 
 The v is schema definition which want to compile.
-The value of v can be a JSON format of text data with []byte or string type, a map presents JSON
-format of schema definition or a SchemaDef struct presents schema definition.
+The value of v can be a JSON format of text data with []byte/string type, a map represents JSON
+format of schema definition, or a SchemaDef struct represents schema definition.
 
 Example of add new schema from JSON text string:
 	schDef := `
@@ -68,20 +68,23 @@ Example of adding new schema from SchemaDef struct:
 
 AddSchema(schemaName string, v interface{}, byteOrder jsonpack.ByteOrder)
 
-For fast prototyping and fast prototyping, AddSchema method supports generate
-schema definition from existing struct without write schema definition by hand.
+For fast prototyping, AddSchema method supports generate schema definition
+from existing struct without writing schema definition by hand.
 
-In this scenario, the value of v is the struct which want to generate,
+In this scenario, the value of v is the source struct which to generated,
 and byteOrder parameter indicates the byte order, can be either jsonpack.LittleEndian
-or jsonpack.BigEndian, it defaults to little-endian if byteOrder not specified.
+or jsonpack.BigEndian, it defaults to little-endian if not specified.
+
+This method supports struct tag, use the same format as standard encoding/json excepts
+"omitempty" option, the "omitempty" option will be ignored.
 
 Example of adding new schema and build schema definition from struct:
 
 	type Info struct {
 		Name string `json:"name"`
-		Area uint32 `json:"area"`
-		// omit this field
-		ExcludeField string `-`
+		// "omitempty" option will be ignore, so this field will be not be omitted
+		Area uint32 `json:"area,omitempty"`
+		ExcludeField string `-` // this field is ignored
 	}
 
 	jsonPack := jsonpack.NewJSONPack()
@@ -95,8 +98,18 @@ func (p *JSONPack) AddSchema(schemaName string, v ...interface{}) (*Schema, erro
 	return sch, nil
 }
 
+// Encode is a wrapper of Schema.Encode,
+// it returns *SchemaNonExistError error if schema not found.
+func (p *JSONPack) Encode(schemaName string, v interface{}) ([]byte, error) {
+	schema := p.schemaManager.get(schemaName)
+	if schema == nil {
+		return nil, &SchemaNonExistError{schemaName}
+	}
+	return schema.Encode(v)
+}
+
 // EncodeTo is a wrapper of Schema.EncodeTo,
-// it returns *SchemaNonExistError error if schema doesn't exist.
+// it returns *SchemaNonExistError error if schema not found.
 func (p *JSONPack) EncodeTo(schemaName string, v interface{}, dataPtr *[]byte) error {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
@@ -106,7 +119,7 @@ func (p *JSONPack) EncodeTo(schemaName string, v interface{}, dataPtr *[]byte) e
 }
 
 // Decode is a wrapper of Schema.Decode,
-// it returns *SchemaNonExistError error if schema doesn't exist.
+// it returns *SchemaNonExistError error if schema not found.
 func (p *JSONPack) Decode(schemaName string, data []byte, v interface{}) error {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
@@ -115,13 +128,23 @@ func (p *JSONPack) Decode(schemaName string, data []byte, v interface{}) error {
 	return schema.decode(data, v, true)
 }
 
-// GetSchema returns schema instance by schemaName, returns nil if schema doesn't exist.
+// Marshal is an alias to Encode function, provides familiar interface of json package
+func (p *JSONPack) Marshal(schemaName string, v interface{}) ([]byte, error) {
+	return p.Encode(schemaName, v)
+}
+
+// Unmarshal is an alias to Decode function, provides familiar interface of json package
+func (p *JSONPack) Unmarshal(schemaName string, data []byte, v interface{}) error {
+	return p.Decode(schemaName, data, v)
+}
+
+// GetSchema returns schema instance by schemaName, returns nil if schema not found.
 func (p *JSONPack) GetSchema(schemaName string) *Schema {
 	return p.schemaManager.get(schemaName)
 }
 
 // GetSchemaDef is a wrapper of Schema.GetSchemaDef, it gets a Schema instance by schemaName,
-// it returns *SchemaNonExistError error if schema doesn't exist.
+// it returns *SchemaNonExistError error if schema not found.
 func (p *JSONPack) GetSchemaDef(schemaName string) (*SchemaDef, error) {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
@@ -131,7 +154,7 @@ func (p *JSONPack) GetSchemaDef(schemaName string) (*SchemaDef, error) {
 }
 
 // GetSchemaDefText is a wrapper of Schema.GetSchemaDefText,
-// it returns *SchemaNonExistError error if schema doesn't exist.
+// it returns *SchemaNonExistError error if schema not found.
 func (p *JSONPack) GetSchemaDefText(schemaName string) ([]byte, error) {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
@@ -159,18 +182,8 @@ func (p *JSONPack) GetAllSchemaDefTexts() map[string][]byte {
 	return p.schemaManager.getAllSchemaDefTexts()
 }
 
-// Encode is a wrapper of Schema.Encode,
-// it returns *SchemaNonExistError error if schema doesn't exist.
-func (p *JSONPack) Encode(schemaName string, v interface{}) ([]byte, error) {
-	schema := p.schemaManager.get(schemaName)
-	if schema == nil {
-		return nil, &SchemaNonExistError{schemaName}
-	}
-	return schema.Encode(v)
-}
-
 // RemoveSchema removes schema by schemaName, it returns *SchemaNonExistError error
-// if schema doesn't exist.
+// if schema not found.
 func (p *JSONPack) RemoveSchema(schemaName string) error {
 	return p.schemaManager.remove(schemaName)
 }

@@ -15,7 +15,7 @@ Encode returns packed binary data of v with compiled schema definition.
 The compiled schema definition is specified by schemaName and
 return data will be nil if error occurs.
 
-The type of v can be a map[string]interface{} which presents valid JSON data, or
+The type of v can be a map[string]interface{} which represents valid JSON data, or
 a struct instance which added by AddSchema function.
 
 The return data contains encoded binary data that can then be decoded by Decode function.

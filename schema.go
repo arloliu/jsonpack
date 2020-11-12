@@ -15,7 +15,7 @@ const (
 	BigEndian    ByteOrder = 1
 )
 
-// Schema of jsonpack, each Schema instance presents a schema added by AddSchema function
+// Schema of jsonpack, each Schema instance represents a schema added by AddSchema function
 type Schema struct {
 	// schema name
 	Name string
@@ -30,7 +30,7 @@ type Schema struct {
 	byteOrder     ByteOrder
 }
 
-// The schema defintion presents the definition that define the structure of JSON data.
+// The schema defintion represents the definition that define the structure of JSON data.
 type SchemaDef struct {
 	Type       string                `json:"type"`
 	Properties map[string]*SchemaDef `json:"properties,omitempty"`
