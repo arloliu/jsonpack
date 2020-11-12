@@ -9,6 +9,7 @@ import (
 
 	"github.com/arloliu/jsonpack/testdata"
 
+	goccy "github.com/goccy/go-json"
 	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/protobuf/proto"
 )
@@ -66,6 +67,12 @@ func BenchmarkStruct_Jsoniter_Encode(b *testing.B) {
 		j.Marshal(&testdata.StructData)
 	}
 }
+func BenchmarkStruct_GOCCY_Encode(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		goccy.Marshal(&testdata.StructData)
+	}
+}
 
 func BenchmarkComplex_JSONPACK_Encode(b *testing.B) {
 	var err error
@@ -92,6 +99,11 @@ func BenchmarkComplex_Jsoniter_Encode(b *testing.B) {
 	}
 }
 
+func BenchmarkComplex_GOCCY_Encode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		goccy.Marshal(&testdata.ComplexData)
+	}
+}
 func BenchmarkComplex_Protobuf_Encode(b *testing.B) {
 	var err error
 	st := testdata.ComplextPb{}
@@ -132,6 +144,12 @@ func BenchmarkComplex_Jsoniter_Struct_Encode(b *testing.B) {
 	}
 }
 
+func BenchmarkComplex_GOCCY_Struct_Encode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		goccy.Marshal(&testdata.ComplexStructData)
+	}
+}
+
 func BenchmarkComplex_JSONPACK_Decode(b *testing.B) {
 	m := make(map[string]interface{})
 	sch := jsonPacker.GetSchema("complex")
@@ -159,7 +177,13 @@ func BenchmarkComplex_Jsoniter_Decode(b *testing.B) {
 	}
 }
 
-func BenchmarkComplex_Protobuf_Decode(b *testing.B) {
+func BenchmarkComplex_GOCCY_Decode(b *testing.B) {
+	m := make(map[string]interface{})
+	for i := 0; i < b.N; i++ {
+		goccy.Unmarshal(testdata.ComplexRawData, &m)
+	}
+}
+func BenchmarkComplex_Protobuf_Struct_Decode(b *testing.B) {
 	s := testdata.ComplextPb{}
 	for i := 0; i < b.N; i++ {
 		err := proto.Unmarshal(testdata.ComplexPbExpData, &s)
@@ -195,6 +219,16 @@ func BenchmarkComplex_Jsoniter_Struct_Decode(b *testing.B) {
 	s := testdata.Complex{}
 	for i := 0; i < b.N; i++ {
 		err := j.Unmarshal(testdata.ComplexRawData, &s)
+		if err != nil {
+			b.Fatalf("decode fail, err: %v", err)
+		}
+	}
+}
+
+func BenchmarkComplex_GOCCY_Struct_Decode(b *testing.B) {
+	s := testdata.Complex{}
+	for i := 0; i < b.N; i++ {
+		err := goccy.Unmarshal(testdata.ComplexRawData, &s)
 		if err != nil {
 			b.Fatalf("decode fail, err: %v", err)
 		}
