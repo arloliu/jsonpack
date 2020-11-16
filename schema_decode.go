@@ -24,6 +24,11 @@ func (s *Schema) Decode(data []byte, v interface{}) (err error) {
 	return s.decode(data, v, true)
 }
 
+// Unmarshal is an alias to Decode function, provides familiar interface of json package
+func (s *Schema) Unmarshal(data []byte, v interface{}) (err error) {
+	return s.Decode(data, v)
+}
+
 func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err error) {
 	defer func() {
 		if r := recover(); r != nil {

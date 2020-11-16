@@ -20,7 +20,7 @@ a struct instance which added by AddSchema function.
 
 The return data contains encoded binary data that can then be decoded by Decode function.
 
-Example of encoding a map type
+Example of encoding a map
 
 	data := map[string]interface{} {
 		"name": "example name",
@@ -31,11 +31,20 @@ Example of encoding a map type
 	// call jsonPack.AddSchema to register schema
 	sch := jsonPack.GetSchema("info")
 	result, err := sch.Encode(data)
+
+Example of encoding struct
+
+	type Info struct
 */
 func (s *Schema) Encode(d interface{}) ([]byte, error) {
 	encodeData := make([]byte, s.encodeBufSize)
 	err := s.EncodeTo(d, &encodeData)
 	return encodeData, err
+}
+
+// Marshal is an alias to Encode function, provides familiar interface of json package
+func (s *Schema) Marshal(d interface{}) ([]byte, error) {
+	return s.Encode(d)
 }
 
 // EncodeTo is similar to Encode function, but passing a pointer to []byte to store
