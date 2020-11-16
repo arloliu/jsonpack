@@ -1,4 +1,5 @@
-# JSONPack
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/arloliu/jsonpack)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/arloliu/jsonpack/main/LICENSE)
 
 Fast and space efficiency JSON serialization golang library. It is a schema oriented design which leverages schema definition to encode JSON document into compact binary encoded format, and decodes back into JSON document.
 
@@ -73,6 +74,8 @@ err := jsonPack.Decode("Info", encodedResult2, &decodeInfoMap)
 > The benchmark result is a important reference but not always suitable for every scenarios.
 
 Test environment: Intel i7-9700K CPU@3.60GHz.
+
+Benchmark code is [here](https://github.com/arloliu/jsonpack/blob/main/benchmark/benchmark_test.go)
 
 *Sorts from fastest to slowest in the following.*
 ## Encode from golang map
