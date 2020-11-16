@@ -8,14 +8,15 @@ import (
 	"sync"
 )
 
+// ByteOrder represents the byte order of numeric type that will be encoded to and decoded from.
 type ByteOrder int
 
 const (
-	LittleEndian ByteOrder = 0
-	BigEndian    ByteOrder = 1
+	LittleEndian ByteOrder = 0 // little endian byte order
+	BigEndian    ByteOrder = 1 // big endian byte order
 )
 
-// Schema of jsonpack, each Schema instance represents a schema added by AddSchema function
+// Schema represents a compiled jsonpack schema instance which created by jsonpack.AddSchema function
 type Schema struct {
 	// schema name
 	Name string
@@ -26,11 +27,20 @@ type Schema struct {
 	rootOp        *operation
 	structOpCache *sync.Map
 	encodeBufSize int64
-	decodeBufSize int64
 	byteOrder     ByteOrder
 }
 
-// The schema defintion represents the definition that define the structure of JSON data.
+// SchemaDef represents a schema definition that defines the structure of JSON document.
+//
+// Example:
+//	schDef := SchemaDef{
+//		Type: "object",
+//		Properties: map[string]*jsonpack.SchemaDef{
+//			"name": {Type: "string"},
+//			"area": {Type: "uint32le"},
+//		},
+//		Order: []string{"name", "area"},
+//	}
 type SchemaDef struct {
 	Type       string                `json:"type"`
 	Properties map[string]*SchemaDef `json:"properties,omitempty"`
@@ -38,7 +48,7 @@ type SchemaDef struct {
 	Order      []string              `json:"order,omitempty"`
 }
 
-// GetSchemaDef returns schema definition instance,
+// GetSchemaDef returns a schema definition instance,
 // returns nil and error if error occurs.
 func (s *Schema) GetSchemaDef() (*SchemaDef, error) {
 	schDef := SchemaDef{}
@@ -49,8 +59,7 @@ func (s *Schema) GetSchemaDef() (*SchemaDef, error) {
 	return &schDef, nil
 }
 
-// GetSchemaDefText returns JSON format document of schema definition,
-// which presetned as []byte.
+// GetSchemaDefText returns JSON document of schema definition that represented as []byte type.
 func (s *Schema) GetSchemaDefText() []byte {
 	return s.textData
 }
@@ -73,7 +82,6 @@ func newSchema(name string, v ...interface{}) *Schema {
 		rootOp:        newOperation("", &nullOp{}, nullOpType),
 		structOpCache: &sync.Map{},
 		encodeBufSize: 512,
-		decodeBufSize: 512,
 		byteOrder:     byteOrder,
 	}
 	return &instance
@@ -420,14 +428,15 @@ func (s *Schema) getTypeEndian(typ string) string {
 	return typ + "LE"
 }
 
-// SetEncodeBufSize set default encode buffer allocation bytes
+// SetEncodeBufSize sets default allocation byte size of encode buffer.
+//
+// The encode buffer will be allocated with this value when calling Encode/Marshall method,
+// and will be re-allocate and growed automatically if necessary.
+// The encoder will also adjust this value by latest encoded result.
+//
+// Sets a proper default allocation size might help to reduce re-allocation frequency and saves memory usage.
 func (s *Schema) SetEncodeBufSize(size int64) {
 	s.encodeBufSize = size
-}
-
-// SetDecodeBufSize set default decode buffer allocation bytes
-func (s *Schema) SetDecodeBufSize(size int64) {
-	s.decodeBufSize = size
 }
 
 func maxInt64(x, y int64) int64 {

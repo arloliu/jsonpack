@@ -49,6 +49,10 @@ func (s *Schema) Marshal(d interface{}) ([]byte, error) {
 
 // EncodeTo is similar to Encode function, but passing a pointer to []byte to store
 // encoded data instead of returning new allocated []byte encoded data.
+//
+// This method is useful with buffer pool for saving memory allocation usage and improving performance.
+//
+// Caution: the encoder might re-allocate and grow the slice if necessary, the length and capacity of slice might be changed.
 func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -141,7 +145,7 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 		return
 	}
 
-	// enlarge default encoder buffer allocation with latest data
+	// enlarge default encoder buffer allocation with latest encoded result
 	s.encodeBufSize = maxInt64(s.encodeBufSize, buf.Offset())
 
 	*dataPtr = buf.Seal()

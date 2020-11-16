@@ -12,118 +12,104 @@ var (
 	errTypeProp       = errors.New("'type' property non-exist or invalid")
 )
 
-// NotImplemented means this method/operation is not implemented
+// NotImplementedError is returned when the operation in handler doesn't implemented.
 type NotImplementedError struct {
-	name string
+	Name string // operation name that not implemented by handler
 }
 
 func (e *NotImplementedError) Error() string {
-	return fmt.Sprintf("'%s' is not implemented", e.name)
+	return fmt.Sprintf("'%s' is not implemented", e.Name)
 }
 
-// WrongTypeError means there has a wrong data type when encoding or decoding data
-// with pre-compiled schema definition
+// WrongTypeError is returned when wrong data type found in data, it happens in Encode/Decode methods.
 type WrongTypeError struct {
-	dataType string
+	DataType string // wrong type of data
 }
 
 func (e *WrongTypeError) Error() string {
-	return fmt.Sprintf("wrong data type '%s'", e.dataType)
+	return fmt.Sprintf("wrong data type '%s'", e.DataType)
 }
 
-// UnknownTypeError means there has a un-supported data type when compiling schema definition
+// UnknownTypeError is returned when un-supported data type found, it happends in AddSchema method.
 type UnknownTypeError struct {
-	dataType string
+	DataType string // data type that un-supported by schema defintion
 }
 
 func (e *UnknownTypeError) Error() string {
-	return fmt.Sprintf("unknown data type '%s'", e.dataType)
+	return fmt.Sprintf("unknown data type '%s'", e.DataType)
 }
 
-// TypeAssertionError indicates an error the that occurred when doing data
-// data type asserrion
+// TypeAssertionError indicates an error that occurs when doing data type asserrion.
 type TypeAssertionError struct {
-	data       interface{}
-	expectType string
+	Data         interface{} // the data that failed on type assertion
+	ExpectedType string      // expected data type
 }
 
 func (e *TypeAssertionError) Error() string {
-	return fmt.Sprintf("got data of type %T but wanted %s", e.data, e.expectType)
+	return fmt.Sprintf("got data of type %T but wanted %s", e.Data, e.ExpectedType)
 }
 
-// InvalidPropValueError indicates an error the that occurred when reading or
-// writing property got invalid value
-type InvalidPropValueError struct {
-	name string
-	data interface{}
-}
-
-func (e *InvalidPropValueError) Error() string {
-	return fmt.Sprintf("property %s has invalid value %v", e.name, e.data)
-}
-
-// StructFieldNonExistError indicates an error the that occurred when structure
-// doesn't contain required field
+// StructFieldNonExistError indicates an error that occurs when structure doesn't have required field.
 type StructFieldNonExistError struct {
-	name  string
-	field string
+	Name  string // name of structure
+	Field string // field of structure that expects to be existed
 }
 
 func (e *StructFieldNonExistError) Error() string {
-	return fmt.Sprintf("struct %s doesn't contain required field: '%s'", e.name, e.field)
+	return fmt.Sprintf("struct %s doesn't contain required field: '%s'", e.Name, e.Field)
 }
 
-// SchemaNonExistError indicates an error that occurred while pre-compiled schema defintion
-// does not exist
+// SchemaNonExistError indicates an error that occurs when pre-compiled schema defintion does not exist.
 type SchemaNonExistError struct {
-	name string
+	Name string // schema name
 }
 
 func (e *SchemaNonExistError) Error() string {
-	return fmt.Sprintf("schema definition '%s' does not exist", e.name)
+	return fmt.Sprintf("schema definition '%s' does not exist", e.Name)
 }
 
-// CompileError indicates an error that occurred while attempting to compile
-// schema definition
+// CompileError represents an error from calling AddSchema method, it indicates there has an error occurs
+// in compiling procedure of schema definition.
 type CompileError struct {
-	name string
-	Err  error
+	Name string // schema name
+	Err  error  // actual error
 }
 
 func (e *CompileError) Error() string {
-	return fmt.Sprintf("compiling '%s' got error: %v", e.name, e.Err.Error())
+	return fmt.Sprintf("compiling '%s' got error: %v", e.Name, e.Err.Error())
 }
 
+// Unwrap returns the underlying error.
 func (e *CompileError) Unwrap() error {
 	return e.Err
 }
 
-// EncodeError indicates an error that occurred while attempting to encode data with
-// pre-compiled schema definition
+// EncodeError represents an error from calling Encode or Marshal methods.
 type EncodeError struct {
-	name string
-	Err  error
+	Name string // schema name
+	Err  error  // actual error
 }
 
 func (e *EncodeError) Error() string {
-	return fmt.Sprintf("encode with schema definition '%s' got error: %v", e.name, e.Err.Error())
+	return fmt.Sprintf("encode with schema definition '%s' got error: %v", e.Name, e.Err.Error())
 }
 
+// Unwrap returns the underlying error.
 func (e *EncodeError) Unwrap() error {
 	return e.Err
 }
 
-// DecodeError indicates an error that occurred while attempting to decode packed binary data with
-// pre-compiled schema definition
+// DecodeError represents an error from calling Decode or Unmarshal methods.
 type DecodeError struct {
-	name string
-	Err  error
+	Name string // schema name
+	Err  error  // actual error
 }
 
 func (e *DecodeError) Error() string {
-	return fmt.Sprintf("decode with schema definition '%s' got error: %v", e.name, e.Err.Error())
+	return fmt.Sprintf("decode with schema definition '%s' got error: %v", e.Name, e.Err.Error())
 }
 
+// Unwrap returns the underlying error.
 func (e *DecodeError) Unwrap() error {
 	return e.Err
 }

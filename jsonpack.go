@@ -1,11 +1,11 @@
 package jsonpack
 
-// JSONPack JSON packer structure
+// JSONPack provides top-level operations for schema.
 type JSONPack struct {
 	schemaManager *schemaManager
 }
 
-// NewJSONPack Create instance of JSONPacker
+// NewJSONPack returns a new jsonpack instance.
 func NewJSONPack() *JSONPack {
 	instance := JSONPack{}
 	instance.schemaManager = newSchemaManager()
@@ -13,17 +13,17 @@ func NewJSONPack() *JSONPack {
 }
 
 /*
-AddSchema will compile schema definition and stores compiled result in internal schema manager.
+AddSchema compiles schema definition and stores compiled result in internal schema manager.
 
-It's a variadic function which accept two types of input parameters in the following.
+It's a variadic function which accepts two input argument forms in the following.
 
 AddSchema(schemaName string, v interface{})
 
 The v is schema definition which want to compile.
-The value of v can be a JSON format of text data with []byte/string type, a map represents JSON
-format of schema definition, or a SchemaDef struct represents schema definition.
+The value of v can be a JSON document with []byte/string type, a map represents JSON
+format of schema definition, or a SchemaDef struct which represents a schema definition.
 
-Example of add new schema from JSON text string:
+Example of add new schema from JSON document:
 	schDef := `
 	{
 		"type": "object",
@@ -38,7 +38,7 @@ Example of add new schema from JSON text string:
 	jsonPack := jsonpack.NewJSONPack()
 	sch, err := jsonPack.AddSchema("info", schDef)
 
-Example of adding new schema from map of schema definition:
+Example of adding new schema from a map of schema definition:
 
 	schDef := map[string]interface{}{
 		"type": "object",
@@ -71,7 +71,7 @@ AddSchema(schemaName string, v interface{}, byteOrder jsonpack.ByteOrder)
 For fast prototyping, AddSchema method supports generate schema definition
 from existing struct without writing schema definition by hand.
 
-In this scenario, the value of v is the source struct which to generated,
+In this scenario, the value of v is the target struct which to be generated,
 and byteOrder parameter indicates the byte order, can be either jsonpack.LittleEndian
 or jsonpack.BigEndian, it defaults to little-endian if not specified.
 
@@ -128,17 +128,17 @@ func (p *JSONPack) Decode(schemaName string, data []byte, v interface{}) error {
 	return schema.decode(data, v, true)
 }
 
-// Marshal is an alias to Encode function, provides familiar interface of json package
+// Marshal is an alias to Encode function, provides familiar interface of standard json package.
 func (p *JSONPack) Marshal(schemaName string, v interface{}) ([]byte, error) {
 	return p.Encode(schemaName, v)
 }
 
-// Unmarshal is an alias to Decode function, provides familiar interface of json package
+// Unmarshal is an alias to Decode function, provides familiar interface of standard json package.
 func (p *JSONPack) Unmarshal(schemaName string, data []byte, v interface{}) error {
 	return p.Decode(schemaName, data, v)
 }
 
-// GetSchema returns schema instance by schemaName, returns nil if schema not found.
+// GetSchema returns a schema instance by schemaName, returns nil if schema not found.
 func (p *JSONPack) GetSchema(schemaName string) *Schema {
 	return p.schemaManager.get(schemaName)
 }
@@ -164,7 +164,7 @@ func (p *JSONPack) GetSchemaDefText(schemaName string) ([]byte, error) {
 }
 
 // GetAllSchemas returns a map which contains all existed schema instances,
-// key of map it schema name, and value of map is *Schema.
+// the key of map it schema name, and value of map is *Schema.
 func (p *JSONPack) GetAllSchemas() map[string]*Schema {
 	return p.schemaManager.getAllSchemas()
 }
