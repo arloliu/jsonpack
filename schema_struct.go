@@ -72,9 +72,11 @@ func (s *Schema) _buildStructOperation(sop *structOperation, op *operation, typ 
 			sop.appendChild(childOp)
 		}
 
-	case arrayOpType:
+	case sliceOpType, arrayOpType:
 		switch typ := typ.(type) {
 		case *reflect2.UnsafeArrayType:
+			sop.handler = _arrayOp
+			sop.handlerType = arrayOpType
 			itemOp := op.children[0]
 			childOp := newStructOperation(itemOp.handler, itemOp.handlerType)
 			err = s._buildStructOperation(childOp, itemOp, typ.Elem())
@@ -84,7 +86,6 @@ func (s *Schema) _buildStructOperation(sop *structOperation, op *operation, typ 
 			sop.appendChild(childOp)
 
 		case *reflect2.UnsafeSliceType:
-			// overwrite array operation to slice operation
 			sop.handler = _sliceOp
 			sop.handlerType = sliceOpType
 			itemOp := op.children[0]

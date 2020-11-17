@@ -230,19 +230,10 @@ func encodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{
 	return nil
 }
 
-func decodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
+func decodeSliceAnyDynamic(buf *ibuf.Buffer, opNode *operation, ptr *[]interface{}) (interface{}, error) {
 	var err error
-	var m []interface{}
-	var mPtr *[]interface{}
-
-	vType := reflect2.TypeOf(v)
-	if vType.Kind() == reflect.Ptr {
-		mPtr = v.(*[]interface{})
-		m = *mPtr
-	} else {
-		m = v.([]interface{})
-		mPtr = &m
-	}
+	// var ptr *[]interface{} = &v
+	var m []interface{} = *ptr
 	size, _ := buf.ReadVarUint()
 
 	if cap(m) < int(size) {
@@ -253,16 +244,91 @@ func decodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) 
 	childNode := opNode.children[0]
 	for i := uint64(0); i < size; i++ {
 		childProp := _createNewData(buf, childNode)
-		m[i] = childProp
-		m[i], err = childNode.handler.decodeDynamic(buf, childNode, m[i])
+		m[i], err = childNode.handler.decodeDynamic(buf, childNode, childProp)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	*mPtr = m
+	*ptr = m
 
 	return m, nil
+}
+
+func decodeSliceMapDynamic(buf *ibuf.Buffer, opNode *operation, ptr *[]map[string]interface{}) (interface{}, error) {
+	var m []map[string]interface{} = *ptr
+	var ok bool
+
+	size, _ := buf.ReadVarUint()
+
+	if cap(m) < int(size) {
+		m = make([]map[string]interface{}, size)
+	} else {
+		m = m[:size]
+	}
+	childNode := opNode.children[0]
+	for i := uint64(0); i < size; i++ {
+		childProp := _createNewData(buf, childNode)
+		result, err := childNode.handler.decodeDynamic(buf, childNode, childProp)
+		if err != nil {
+			return nil, err
+		}
+		m[i], ok = result.(map[string]interface{})
+		if !ok {
+			return nil, &TypeAssertionError{Data: result, ExpectedType: "map[string]interface{}"}
+		}
+	}
+
+	*ptr = m
+
+	return m, nil
+}
+
+func decodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
+	vType := reflect.TypeOf(v)
+	if vType.Kind() == reflect.Ptr {
+		switch d := v.(type) {
+		case *[]map[string]interface{}:
+			return decodeSliceMapDynamic(buf, opNode, d)
+		case *[]interface{}:
+			return decodeSliceAnyDynamic(buf, opNode, d)
+		}
+	} else {
+		switch d := v.(type) {
+		case []map[string]interface{}:
+			return decodeSliceMapDynamic(buf, opNode, &d)
+		case []interface{}:
+			return decodeSliceAnyDynamic(buf, opNode, &d)
+		}
+	}
+	return nil, &WrongTypeError{vType.Name()}
+}
+
+func decodeArrayTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
+	var err error
+	var m []interface{}
+	var ptr *[]interface{}
+
+	size, _ := buf.ReadVarUint()
+
+	val := reflect.ValueOf(v).Elem()
+	if val.Len() < int(size) {
+		return nil, fmt.Errorf("the capacity of array of decode target less than data")
+	}
+
+	m = val.Slice(0, int(size)).Interface().([]interface{})
+	ptr = &m
+	childNode := opNode.children[0]
+	for i := 0; i < int(size); i++ {
+		childProp := _createNewData(buf, childNode)
+		m[i], err = childNode.handler.decodeDynamic(buf, childNode, childProp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	*ptr = m
+
+	return v, nil
 }
 
 func _createNewData(buf *ibuf.Buffer, opNode *operation) interface{} {

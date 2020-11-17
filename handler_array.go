@@ -1,6 +1,7 @@
 package jsonpack
 
 import (
+	"reflect"
 	"unsafe"
 
 	ibuf "github.com/arloliu/jsonpack/buffer"
@@ -37,6 +38,10 @@ func (p *arrayOp) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr un
 	buf.WriteVarUint(uint64(length))
 	for i := 0; i < length; i++ {
 		itemPtr := arrayType.UnsafeGetIndex(ptr, i)
+		// dereference pointer
+		if itemOp.isPtrType {
+			itemPtr = derefPtr(itemPtr)
+		}
 		err = itemOp.handler.encodeStruct(buf, itemOp, itemPtr)
 		if err != nil {
 			return err
@@ -50,5 +55,8 @@ func (p *arrayOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data interf
 }
 
 func (p *arrayOp) decodeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
-	return decodeSliceTypeDynamic(buf, opNode, v)
+	if reflect2.TypeOf(v).Kind() == reflect.Slice {
+		return _sliceOp.decodeDynamic(buf, opNode, v)
+	}
+	return decodeArrayTypeDynamic(buf, opNode, v)
 }

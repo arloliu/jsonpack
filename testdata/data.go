@@ -9,6 +9,7 @@ import (
 )
 
 var ComplexSchDef []byte
+var ComplexAnyData interface{}
 var ComplexData map[string]interface{}
 var ComplexRawData []byte
 var ComplexStructData Complex
@@ -20,11 +21,16 @@ var StructData TestStruct
 var StructExpData []byte
 var StructPbExpData []byte
 
-var ArraySchDef []byte
-var ArrayRawData []byte
-var ArrayData []interface{}
-var ArrayStructData []TestArrayStruct
-var ArrayExpData []byte
+var SliceSchDef []byte
+var SliceRawData []byte
+var SliceData []interface{}
+var SliceMapData []map[string]interface{}
+var SliceStructData []TestArrayStruct
+var SliceExpData []byte
+
+var ArrayData [3]interface{}
+var ArrayMapData [3]map[string]interface{}
+var ArrayStructData [3]TestArrayStruct
 
 var dataDir string
 
@@ -38,6 +44,10 @@ func init() {
 		os.Exit(1)
 	}
 
+	_, ComplexAnyData, err = loadJsonTextAnyData("complex.data.json")
+	if err != nil {
+		os.Exit(1)
+	}
 	ComplexRawData, ComplexData, err = loadJsonTextData("complex.data.json")
 	if err != nil {
 		os.Exit(1)
@@ -57,21 +67,38 @@ func init() {
 		os.Exit(1)
 	}
 
-	ArraySchDef, _, err = loadJsonTextData("array.def.json")
-	if err != nil {
-		os.Exit(1)
-	}
-	ArrayData, ArrayRawData, err = loadTestArrayJSON("array.data.json")
+	SliceSchDef, _, err = loadJsonTextData("array.def.json")
 	if err != nil {
 		os.Exit(1)
 	}
 
-	err = json.Unmarshal(ArrayRawData, &ArrayStructData)
+	SliceData, SliceRawData, err = loadTestArrayJSON("array.data.json")
 	if err != nil {
 		os.Exit(1)
 	}
 
-	ArrayExpData, err = loadRawTestData("array.bin")
+	SliceMapData, _, err = loadTestArrayMapJSON("array.data.json")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	err = json.Unmarshal(SliceRawData, &SliceStructData)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	// clone slice to array
+	for i, v := range SliceData {
+		ArrayData[i] = v
+	}
+	for i, v := range SliceMapData {
+		ArrayMapData[i] = v
+	}
+	for i, v := range SliceStructData {
+		ArrayStructData[i] = v
+	}
+
+	SliceExpData, err = loadRawTestData("array.bin")
 	if err != nil {
 		os.Exit(1)
 	}
@@ -123,12 +150,43 @@ func loadJsonTextData(filename string) ([]byte, map[string]interface{}, error) {
 	return rawData, jsonData, nil
 }
 
+func loadJsonTextAnyData(filename string) ([]byte, interface{}, error) {
+	data, err := loadRawTestData(filename)
+	if err != nil {
+		return nil, nil, err
+	}
+	var jsonData interface{}
+	err = json.Unmarshal(data, &jsonData)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rawData, err := json.Marshal(jsonData)
+	if err != nil {
+		return nil, nil, err
+	}
+	return rawData, jsonData, nil
+}
+
 func loadTestArrayJSON(filename string) ([]interface{}, []byte, error) {
 	data, err := loadRawTestData(filename)
 	if err != nil {
 		return nil, nil, err
 	}
 	jsonData := make([]interface{}, 0)
+	err = json.Unmarshal(data, &jsonData)
+	if err != nil {
+		return nil, data, err
+	}
+	return jsonData, data, nil
+}
+
+func loadTestArrayMapJSON(filename string) ([]map[string]interface{}, []byte, error) {
+	data, err := loadRawTestData(filename)
+	if err != nil {
+		return nil, nil, err
+	}
+	jsonData := make([]map[string]interface{}, 0)
 	err = json.Unmarshal(data, &jsonData)
 	if err != nil {
 		return nil, data, err

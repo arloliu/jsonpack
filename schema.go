@@ -250,8 +250,8 @@ func (s *Schema) buildFromMap(schema map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		s.rootOp.handler = _arrayOp
-		s.rootOp.handlerType = arrayOpType
+		s.rootOp.handler = _sliceOp
+		s.rootOp.handlerType = sliceOpType
 	default:
 		return errors.New("type property needs to be 'object' or 'array' in top-level schema definition")
 	}
@@ -328,7 +328,7 @@ func (s *Schema) compileSchemaObject(schema map[string]interface{}, curOp *opera
 
 		} else if propType == "array" {
 			// create and append object operation to child operation list
-			newOp = newOperation(fieldName, _arrayOp, arrayOpType)
+			newOp = newOperation(fieldName, _sliceOp, sliceOpType)
 			curOp.children = append(curOp.children, newOp)
 			err = s.compileSchemaArray(prop, newOp)
 		} else if isBuiltinType(&propType) {
@@ -363,7 +363,7 @@ func (s *Schema) compileSchemaArray(schema map[string]interface{}, curOp *operat
 		curOp.children = append(curOp.children, newOp)
 		err = s.compileSchemaObject(items, newOp)
 	} else if itemType == "array" {
-		newOp = newOperation("", _arrayOp, arrayOpType)
+		newOp = newOperation("", _sliceOp, sliceOpType)
 		curOp.children = append(curOp.children, newOp)
 		err = s.compileSchemaArray(items, newOp)
 	} else if isBuiltinType(&itemType) {

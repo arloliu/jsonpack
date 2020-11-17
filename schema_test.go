@@ -1,7 +1,7 @@
 package jsonpack
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -22,9 +22,9 @@ func init() {
 		os.Exit(1)
 	}
 
-	_, err = jsonPack.AddSchema("arrayObject", testdata.ArraySchDef)
+	_, err = jsonPack.AddSchema("sliceObject", testdata.SliceSchDef)
 	if err != nil {
-		fmt.Printf("AddSchema arrayObject err: %v\n", err)
+		fmt.Printf("AddSchema sliceObject err: %v\n", err)
 		os.Exit(1)
 	}
 	_, err = jsonPack.AddSchema("testStruct", testdata.StructSchDef)
@@ -56,16 +56,54 @@ func TestStructEncode(t *testing.T) {
 func TestComplexEncode(t *testing.T) {
 	var err error
 	var encData []byte
+
+	// test encode interface{}
+	encData, err = jsonPack.Encode("complex", testdata.ComplexAnyData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.ComplexExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+
+	// test encode *interface{}
+	encData, err = jsonPack.Encode("complex", &testdata.ComplexAnyData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.ComplexExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+
+	// test encode map[string]interface{}
 	encData, err = jsonPack.Encode("complex", testdata.ComplexData)
 	if err != nil {
 		t.Errorf("Encode fail, error: %v", err)
 	}
+	if !compareBytes(t, encData, testdata.ComplexExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
 
+	// test encode *map[string]interface{}
+	encData, err = jsonPack.Encode("complex", &testdata.ComplexData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
 	if !compareBytes(t, encData, testdata.ComplexExpData) {
 		t.Errorf("Encoded data mismatch")
 	}
 
 	var encData2 []byte
+	// test encode Complex
+	encData2, err = jsonPack.Encode("complex", testdata.ComplexStructData)
+	if err != nil {
+		t.Errorf("Encode struct fail, error: %v", err)
+	}
+	if !compareBytes(t, encData2, testdata.ComplexExpData) {
+		t.Errorf("Encoded complex data mismatch")
+	}
+
+	// test encode *Complex
 	encData2, err = jsonPack.Encode("complex", &testdata.ComplexStructData)
 	if err != nil {
 		t.Errorf("Encode struct fail, error: %v", err)
@@ -99,66 +137,161 @@ func TestComplexEncode(t *testing.T) {
 
 }
 
-func TestArrayEncode(t *testing.T) {
+func TestSliceEncode(t *testing.T) {
 	var err error
+	var encData []byte
 
-	// test encode slice of maps
-	encData, err := jsonPack.Encode("arrayObject", testdata.ArrayData)
+	// test encode []interface{}
+	encData, err = jsonPack.Encode("sliceObject", testdata.SliceData)
 	if err != nil {
 		t.Errorf("Encode fail, error: %v", err)
 	}
-
-	if !compareBytes(t, encData, testdata.ArrayExpData) {
+	if !compareBytes(t, encData, testdata.SliceExpData) {
 		t.Errorf("Encoded data mismatch")
 	}
 
-	// test encode slice of structs
+	// test encode *[]interface{}
+	encData, err = jsonPack.Encode("sliceObject", &testdata.SliceData)
 	if err != nil {
-		t.Errorf("Unmarshal array struct fail, error: %v", err)
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
 	}
 
-	encData2, err := jsonPack.Encode("arrayObject", &testdata.ArrayStructData)
+	// test encode []map[string]interface{}
+	encData, err = jsonPack.Encode("sliceObject", testdata.SliceMapData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
 
+	// test encode *[]map[string]interface{}
+	encData, err = jsonPack.Encode("sliceObject", &testdata.SliceMapData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+
+	// test encode []TestArrayStruct
+	encData, err = jsonPack.Encode("sliceObject", testdata.SliceStructData)
 	if err != nil {
 		t.Errorf("Encode array struct fail, error: %v", err)
 	}
-
-	if !compareBytes(t, encData2, testdata.ArrayExpData) {
+	if !compareBytes(t, encData, testdata.SliceExpData) {
 		t.Errorf("Encoded data mismatch")
 	}
 
+	// test encode *[]TestArrayStruct
+	encData, err = jsonPack.Encode("sliceObject", &testdata.SliceStructData)
+	if err != nil {
+		t.Errorf("Encode array struct fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+}
+
+func TestArrayEncode(t *testing.T) {
+	var err error
+	var encData []byte
+
+	// test encode [3]interface{}
+	encData, err = jsonPack.Encode("sliceObject", testdata.ArrayData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+
+	// test encode *[3]interface{}
+	encData, err = jsonPack.Encode("sliceObject", &testdata.ArrayData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+
+	// test encode [3]map[string]interface{}
+	encData, err = jsonPack.Encode("sliceObject", testdata.ArrayMapData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+
+	// test encode *[3]map[string]interface{}
+	encData, err = jsonPack.Encode("sliceObject", &testdata.ArrayMapData)
+	if err != nil {
+		t.Errorf("Encode fail, error: %v", err)
+	}
+	if !compareBytes(t, encData, testdata.SliceExpData) {
+		t.Errorf("Encoded data mismatch")
+	}
+}
+
+func TestSliceDecode(t *testing.T) {
+	var err error
+
+	var decodeData []interface{}
+	err = jsonPack.Decode("sliceObject", testdata.SliceExpData, &decodeData)
+	if err != nil {
+		t.Errorf("Decode fail, err: %v", err)
+	}
+	if !compareMap(decodeData, testdata.SliceData) {
+		t.Errorf("Decode fail, compareMap fail")
+	}
+
+	var decodeData2 []map[string]interface{}
+	err = jsonPack.Decode("sliceObject", testdata.SliceExpData, &decodeData2)
+	if err != nil {
+		t.Errorf("Decode fail, err: %v", err)
+	}
+	if !compareMap(decodeData2, testdata.SliceMapData) {
+		t.Errorf("Decode fail, compareMap fail")
+	}
+
+	// decodeStructData := make([]testdata.TestArrayStruct, 0)
+	var decodeStructData []testdata.TestArrayStruct
+	err = jsonPack.Decode("sliceObject", testdata.SliceExpData, &decodeStructData)
+	if err != nil {
+		t.Errorf("Decode array struct fail, err: %v", err)
+	}
+
+	if !reflect.DeepEqual(&testdata.SliceStructData, &decodeStructData) {
+		t.Errorf("Decode array struct data mismatch")
+	}
 }
 
 func TestArrayDecode(t *testing.T) {
 	var err error
 
-	// decodeData := make([]interface{}, 10)
-	var decodeData []interface{}
-	err = jsonPack.Decode("arrayObject", testdata.ArrayExpData, &decodeData)
+	var decodeData [3]interface{}
+	err = jsonPack.Decode("sliceObject", testdata.SliceExpData, &decodeData)
 	if err != nil {
 		t.Errorf("Decode fail, err: %v", err)
 	}
-	if !compareMap(decodeData, testdata.ArrayData) {
-		t.Errorf("Decode fail, compareMap fail")
-
-	}
-	m1, _ := json.Marshal(decodeData)
-	m2, _ := json.Marshal(testdata.ArrayData)
-	if !reflect.DeepEqual(m1, m2) {
-		t.Errorf("Decode fail, marshaled data mismatch")
-	}
+	// if !compareMap(decodeData, testdata.ArrayData) {
+	// 	t.Errorf("Decode fail, compareMap fail")
+	// }
 
 	// decodeStructData := make([]testdata.TestArrayStruct, 0)
 	var decodeStructData []testdata.TestArrayStruct
-	err = jsonPack.Decode("arrayObject", testdata.ArrayExpData, &decodeStructData)
+	err = jsonPack.Decode("sliceObject", testdata.SliceExpData, &decodeStructData)
 	if err != nil {
 		t.Errorf("Decode array struct fail, err: %v", err)
 	}
 
-	if !reflect.DeepEqual(&testdata.ArrayStructData, &decodeStructData) {
+	if !reflect.DeepEqual(&testdata.SliceStructData, &decodeStructData) {
 		t.Errorf("Decode array struct data mismatch")
 	}
-
 }
 
 func TestStructDecode(t *testing.T) {
@@ -265,19 +398,30 @@ func TestComplexDecode(t *testing.T) {
 	if err != nil {
 		t.Errorf("Decode fail, err: %v", err)
 	}
-
 	if !compareMap(decodeData, testdata.ComplexData) {
 		t.Errorf("Decode fail, compareMap fail")
 	}
 
-	m1, _ := json.Marshal(decodeData)
-	m2, _ := json.Marshal(testdata.ComplexData)
-	if !reflect.DeepEqual(m1, m2) {
-		t.Errorf("Decode fail, marshled data mismatch")
+	// test decode into interface{}
+	var decodeData2 interface{}
+	err = jsonPack.Decode("complex", testdata.ComplexExpData, &decodeData2)
+	var expectErr *DecodeError
+	if !errors.As(err, &expectErr) {
+		t.Errorf("Decode fail, err: %v", err)
 	}
 
 	// test decode into struct
 	decodeStructData := testdata.Complex{}
+	err = jsonPack.Decode("complex", testdata.ComplexExpData, &decodeStructData)
+	if err != nil {
+		t.Errorf("Decode struct fail, err: %v", err)
+	}
+	// t.Logf("decodeStructData: %+v", decodeStructData)
+
+	if !reflect.DeepEqual(&decodeStructData, &testdata.ComplexStructData) {
+		t.Errorf("Decode struct data fail")
+	}
+
 	err = jsonPack.Decode("complex", testdata.ComplexExpData, &decodeStructData)
 	if err != nil {
 		t.Errorf("Decode struct fail, err: %v", err)

@@ -41,7 +41,15 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 		}
 	}()
 
+	if v == nil {
+		return &DecodeError{s.Name, errors.New("target of decoding is nil")}
+	}
+
 	vType := reflect2.TypeOf(v)
+	if vType == nil {
+		return &DecodeError{s.Name, errors.New("invalid type of target")}
+	}
+
 	vKind := vType.Kind()
 
 	if reflect2.IsNil(v) {
@@ -56,31 +64,6 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 
 	buf := ibuf.From(data)
 	switch d := v.(type) {
-	case map[string]interface{}:
-		_, err = s.decodeDynamic(buf, s.rootOp, d)
-		if err != nil {
-			return err
-		}
-
-	case []map[string]interface{}:
-		_, err = s.decodeDynamic(buf, s.rootOp, d)
-		if err != nil {
-			return err
-		}
-
-	case []interface{}:
-		_, err = s.decodeDynamic(buf, s.rootOp, d)
-		if err != nil {
-			return err
-		}
-
-	case *[]interface{}:
-		// pass pointer of slice instead of dereferenced value due to slice is not reference type
-		_, err = s.decodeDynamic(buf, s.rootOp, d)
-		if err != nil {
-			return err
-		}
-
 	case *map[string]interface{}:
 		_, err = s.decodeDynamic(buf, s.rootOp, *d)
 		if err != nil {
@@ -88,7 +71,14 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 		}
 
 	case *[]map[string]interface{}:
-		_, err = s.decodeDynamic(buf, s.rootOp, *d)
+		_, err = _sliceOp.decodeDynamic(buf, s.rootOp, d)
+		if err != nil {
+			return err
+		}
+
+	case *[]interface{}:
+		// pass pointer of slice instead of dereferenced value due to slice is not reference type
+		_, err = _sliceOp.decodeDynamic(buf, s.rootOp, d)
 		if err != nil {
 			return err
 		}
@@ -111,13 +101,13 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 			vType = sliceType.Elem()
 			if vType.Kind() == reflect.Struct {
 				var sop *structOperation
-				sop, err = s.getStructOperation(vType, d)
+				sop, err = s.getStructOperation(vType, v)
 				if err != nil {
 					return &DecodeError{s.Name, err}
 				}
-				return s.decodeStruct(buf, sop, d)
-			} else if vType.Kind() == reflect.Map {
-				_, err = s.decodeDynamic(buf, s.rootOp, d)
+				return s.decodeStruct(buf, sop, v)
+			} else if vType.Kind() == reflect.Map || vType.Kind() == reflect.Interface {
+				_, err = s.decodeDynamic(buf, s.rootOp, v)
 			} else {
 				return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
 			}
@@ -127,13 +117,13 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 			vType = sliceType.Elem()
 			if vType.Kind() == reflect.Struct {
 				var sop *structOperation
-				sop, err = s.getStructOperation(vType, d)
+				sop, err = s.getStructOperation(vType, v)
 				if err != nil {
 					return &DecodeError{s.Name, err}
 				}
-				return s.decodeStruct(buf, sop, d)
-			} else if vType.Kind() == reflect.Map {
-				_, err = s.decodeDynamic(buf, s.rootOp, d)
+				return s.decodeStruct(buf, sop, v)
+			} else if vType.Kind() == reflect.Map || vType.Kind() == reflect.Interface {
+				_, err = s.decodeDynamic(buf, s.rootOp, v)
 				if err != nil {
 					return err
 				}
@@ -143,7 +133,11 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 
 		case reflect.Ptr:
 			elemType := toPtrElemType(vType)
-			return s.decode(data, elemType.Indirect(v), false)
+			if elemType.Kind() == reflect.Array {
+				_, err = _arrayOp.decodeDynamic(buf, s.rootOp, v)
+			} else {
+				return s.decode(data, elemType.Indirect(v), false)
+			}
 
 		default:
 			return &DecodeError{s.Name, &WrongTypeError{vType.String()}}

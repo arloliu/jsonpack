@@ -68,6 +68,7 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 	buf := ibuf.From(*dataPtr)
 
 	switch d := d.(type) {
+	// fast path: use type assertion, it's faster then reflection
 	case map[string]interface{}:
 		err = s.encodeDynamic(buf, s.rootOp, d)
 
@@ -77,13 +78,20 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 	case []map[string]interface{}:
 		err = s.encodeDynamic(buf, s.rootOp, d)
 
+	case *[]map[string]interface{}:
+		err = s.encodeDynamic(buf, s.rootOp, *d)
+
 	case []interface{}:
 		err = s.encodeDynamic(buf, s.rootOp, d)
+
+	case *[]interface{}:
+		err = s.encodeDynamic(buf, s.rootOp, *d)
 
 	case *interface{}:
 		return s.EncodeTo(*d, dataPtr)
 
 	default:
+		// slow path: use reflection to check type
 		dType := reflect2.TypeOf(d)
 		switch dType.Kind() {
 		case reflect.Struct:
@@ -98,7 +106,8 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 		case reflect.Slice:
 			sliceType := dType.(*reflect2.UnsafeSliceType)
 			dType = sliceType.Elem()
-			if dType.Kind() == reflect.Struct {
+			switch dType.Kind() {
+			case reflect.Struct:
 				var sop *structOperation
 				sop, err = s.getStructOperation(dType, d)
 				if err != nil {
@@ -106,17 +115,19 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 					return
 				}
 				err = s.encodeStruct(buf, sop, d)
-			} else if dType.Kind() == reflect.Map {
+
+			case reflect.Map, reflect.Interface:
 				err = s.encodeDynamic(buf, s.rootOp, d)
-			} else {
-				err = &EncodeError{s.Name, &WrongTypeError{dType.String()}}
-				return
+
+			default:
+				return &EncodeError{s.Name, &WrongTypeError{dType.String()}}
 			}
 
 		case reflect.Array:
-			sliceType := dType.(*reflect2.UnsafeArrayType)
-			dType = sliceType.Elem()
-			if dType.Kind() == reflect.Struct {
+			arrayType := dType.(*reflect2.UnsafeArrayType)
+			dType = arrayType.Elem()
+			switch dType.Kind() {
+			case reflect.Struct:
 				var sop *structOperation
 				sop, err = s.getStructOperation(dType, d)
 				if err != nil {
@@ -124,11 +135,12 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 					return
 				}
 				err = s.encodeStruct(buf, sop, d)
-			} else if dType.Kind() == reflect.Map {
+
+			case reflect.Map, reflect.Interface:
 				err = s.encodeDynamic(buf, s.rootOp, d)
-			} else {
-				err = &EncodeError{s.Name, &WrongTypeError{dType.String()}}
-				return
+
+			default:
+				return &EncodeError{s.Name, &WrongTypeError{dType.String()}}
 			}
 
 		case reflect.Ptr:
