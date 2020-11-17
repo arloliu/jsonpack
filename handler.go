@@ -232,7 +232,6 @@ func encodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{
 
 func decodeSliceAnyDynamic(buf *ibuf.Buffer, opNode *operation, ptr *[]interface{}) (interface{}, error) {
 	var err error
-	// var ptr *[]interface{} = &v
 	var m []interface{} = *ptr
 	size, _ := buf.ReadVarUint()
 
@@ -285,23 +284,17 @@ func decodeSliceMapDynamic(buf *ibuf.Buffer, opNode *operation, ptr *[]map[strin
 }
 
 func decodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
-	vType := reflect.TypeOf(v)
-	if vType.Kind() == reflect.Ptr {
-		switch d := v.(type) {
-		case *[]map[string]interface{}:
-			return decodeSliceMapDynamic(buf, opNode, d)
-		case *[]interface{}:
-			return decodeSliceAnyDynamic(buf, opNode, d)
-		}
-	} else {
-		switch d := v.(type) {
-		case []map[string]interface{}:
-			return decodeSliceMapDynamic(buf, opNode, &d)
-		case []interface{}:
-			return decodeSliceAnyDynamic(buf, opNode, &d)
-		}
+	switch ptr := v.(type) {
+	case *[]interface{}:
+		return decodeSliceAnyDynamic(buf, opNode, ptr)
+	case []interface{}:
+		return decodeSliceAnyDynamic(buf, opNode, &ptr)
+	case *[]map[string]interface{}:
+		return decodeSliceMapDynamic(buf, opNode, ptr)
+	case []map[string]interface{}:
+		return decodeSliceMapDynamic(buf, opNode, &ptr)
 	}
-	return nil, &WrongTypeError{vType.Name()}
+	return nil, &WrongTypeError{reflect.TypeOf(v).Name()}
 }
 
 func decodeArrayTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {

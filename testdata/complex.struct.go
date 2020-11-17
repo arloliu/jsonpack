@@ -1,11 +1,11 @@
 package testdata
 
 type ComplextStatus struct {
-	Group string  `json:"group"`
-	Msg   *string `json:"msg"`
+	Group string `json:"group"`
+	Msg   string `json:"msg"`
 }
 type ComplexUser struct {
-	Name          *string        `json:"name"`
+	Name          string         `json:"name"`
 	Email         string         `json:"email"`
 	CurrentStatus ComplextStatus `json:"currentStatus"`
 }
