@@ -171,7 +171,7 @@ func (b *Buffer) ReadByteUnsafe() byte {
 	return b.buf[b.offset-1]
 }
 
-// ReadByte reads n bytes from the buffer at current offset
+// ReadBytes reads n bytes from the buffer at current offset
 // and moves the offset forward n byte.
 //
 // If the offset is invalid or not safe to read data,
@@ -201,6 +201,7 @@ func (b *Buffer) ReadBytesUnsafe(n int64) []byte {
 /******************
  * Varint Routine *
  ******************/
+
 // ByteLenVarUint returns the byte length of variant integer number
 func ByteLenVarUint(x uint64) int64 {
 	switch {

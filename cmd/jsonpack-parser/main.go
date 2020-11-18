@@ -50,10 +50,10 @@ type packageInfo struct {
 	bigEndian bool
 }
 
-type SchemaDef struct {
+type schemaDef struct {
 	Type       string                `json:"type"`
-	Properties map[string]*SchemaDef `json:"properties,omitempty"`
-	Items      *SchemaDef            `json:"items,omitempty"`
+	Properties map[string]*schemaDef `json:"properties,omitempty"`
+	Items      *schemaDef            `json:"items,omitempty"`
 	Order      []string              `json:"order,omitempty"`
 }
 
@@ -104,38 +104,36 @@ func init() {
 	}
 }
 
-func (p *packageInfo) buildBultinType(data string) (*SchemaDef, bool) {
+func (p *packageInfo) buildBultinType(data string) (*schemaDef, bool) {
 	const uintSize = 32 << (^uint(0) >> 32 & 1)
 
 	switch data {
 	case "string":
-		return &SchemaDef{Type: data}, true
+		return &schemaDef{Type: data}, true
 	case "bool":
-		return &SchemaDef{Type: "boolean"}, true
+		return &schemaDef{Type: "boolean"}, true
 	case "int":
 		if uintSize == 64 {
-			return &SchemaDef{Type: p.numEndian("int64")}, true
-		} else {
-			return &SchemaDef{Type: p.numEndian("int32")}, true
+			return &schemaDef{Type: p.numEndian("int64")}, true
 		}
+		return &schemaDef{Type: p.numEndian("int32")}, true
 	case "uint":
 		if uintSize == 64 {
-			return &SchemaDef{Type: p.numEndian("uint64")}, true
-		} else {
-			return &SchemaDef{Type: p.numEndian("uint32")}, true
+			return &schemaDef{Type: p.numEndian("uint64")}, true
 		}
+		return &schemaDef{Type: p.numEndian("uint32")}, true
 	case "byte":
-		return &SchemaDef{Type: "uint8"}, true
+		return &schemaDef{Type: "uint8"}, true
 	case "int8", "uint8":
-		return &SchemaDef{Type: data}, true
+		return &schemaDef{Type: data}, true
 	case "int16", "int32", "int64", "uint16", "uint32", "uint64", "float32", "float64":
-		return &SchemaDef{Type: p.numEndian(data)}, true
+		return &schemaDef{Type: p.numEndian(data)}, true
 	default:
 		return nil, false
 	}
 }
 
-func (p *packageInfo) parseNode(fileInfo *pkgFileInfo, node ast.Node) (*SchemaDef, error) {
+func (p *packageInfo) parseNode(fileInfo *pkgFileInfo, node ast.Node) (*schemaDef, error) {
 	switch node := node.(type) {
 	case *ast.Ident:
 		data, ok := p.buildBultinType(node.Name)
@@ -157,7 +155,7 @@ func (p *packageInfo) parseNode(fileInfo *pkgFileInfo, node ast.Node) (*SchemaDe
 		if err != nil {
 			return nil, err
 		}
-		st := SchemaDef{Type: "array", Items: arrSt}
+		st := schemaDef{Type: "array", Items: arrSt}
 		return &st, nil
 
 	case *ast.StarExpr:
@@ -201,9 +199,9 @@ func parseFieldName(name string, tag *ast.BasicLit) string {
 	return name
 }
 
-func (p *packageInfo) parseStruct(fileInfo *pkgFileInfo, stAst *ast.StructType) (*SchemaDef, error) {
-	st := SchemaDef{Type: "object"}
-	st.Properties = make(map[string]*SchemaDef)
+func (p *packageInfo) parseStruct(fileInfo *pkgFileInfo, stAst *ast.StructType) (*schemaDef, error) {
+	st := schemaDef{Type: "object"}
+	st.Properties = make(map[string]*schemaDef)
 	st.Order = make([]string, 0, len(stAst.Fields.List))
 
 	for _, field := range stAst.Fields.List {
@@ -351,15 +349,15 @@ func (p *packageInfo) getNode(name string) (*pkgFileInfo, ast.Node) {
 	return nil, nil
 }
 
-func parsePackageStruct(pkgDir string, name string) (*SchemaDef, error) {
+func parsePackageStruct(pkgDir string, name string) (*schemaDef, error) {
 	return _parsePackage(pkgDir, name, true)
 }
 
-func parsePackageNode(pkgDir string, name string) (*SchemaDef, error) {
+func parsePackageNode(pkgDir string, name string) (*schemaDef, error) {
 	return _parsePackage(pkgDir, name, false)
 }
 
-func _parsePackage(pkgDir string, name string, findStruct bool) (*SchemaDef, error) {
+func _parsePackage(pkgDir string, name string, findStruct bool) (*schemaDef, error) {
 	fset := token.NewFileSet() // positions are relative to fset
 	// Parse src but stop after processing the imports.
 	pkgs, err := parser.ParseDir(fset, pkgDir, nil, 0)
@@ -391,7 +389,7 @@ func _parsePackage(pkgDir string, name string, findStruct bool) (*SchemaDef, err
 	return sch, nil
 }
 
-func mergeEmbedField(name string, dst *SchemaDef, embed *SchemaDef) error {
+func mergeEmbedField(name string, dst *schemaDef, embed *schemaDef) error {
 	// skip invalid field
 	if embed == nil {
 		return nil
@@ -477,7 +475,7 @@ func newPackageInfo(pkgs map[string]*ast.Package, pkgDir string, bigEndian bool)
 func main() {
 	var err error
 	if !isDirectory(params.srcDir) {
-		fmt.Fprintf(os.Stderr, "pacakge dir '%s' is not exist\n", params.srcDir)
+		fmt.Fprintf(os.Stderr, "package dir '%s' is not exist\n", params.srcDir)
 		os.Exit(1)
 	}
 

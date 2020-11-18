@@ -10,11 +10,15 @@ import (
 )
 
 // ByteOrder represents the byte order of numeric type that will be encoded to and decoded from.
+// Possible values are LittleEndian and BigEndian
 type ByteOrder int
 
+// byte order for decode/encode,
 const (
-	LittleEndian ByteOrder = 0 // little endian byte order
-	BigEndian    ByteOrder = 1 // big endian byte order
+	// little endian byte order.
+	LittleEndian ByteOrder = 0
+	// big endian byte order.
+	BigEndian ByteOrder = 1
 )
 
 // Schema represents a compiled jsonpack schema instance which created by jsonpack.AddSchema function
