@@ -53,8 +53,7 @@ func (s *Schema) _buildStructOperation(sop *structOperation, op *operation, typ 
 		}
 
 		fieldMap := parseStructFieldName(structType)
-
-		// overwrite object operation to struct operation
+		// override object operation to struct operation
 		sop.handler = _structOp
 		sop.handlerType = structOpType
 
@@ -123,8 +122,6 @@ func parseJsonTag(field *reflect2.StructField) (*jsonTag, bool) {
 		return data, true
 	}
 
-	// data.private = unicode.IsLower(rune((*field).Name()[0]))
-
 	tagParts := strings.Split(tag, ",")
 	if tagParts[0] != "" {
 		data.name = tagParts[0]
@@ -151,21 +148,34 @@ func cloneAnonymousObjectOp(op *operation) *operation {
 	return &newOp
 }
 
-func parseStructFieldName(structType *reflect2.UnsafeStructType) map[string]string {
+func parseStructField(structType *reflect2.UnsafeStructType, fieldMap map[string]string) {
 	numField := structType.NumField()
-	fieldMap := make(map[string]string, numField)
-
 	for i := 0; i < numField; i++ {
 		field := structType.Field(i)
-		tag, ok := parseJsonTag(&field)
-		var mapKey string
-		if !ok || tag.omit || tag.name == "" {
-			mapKey = field.Name()
-		} else {
-			mapKey = tag.name
+		// handle embedded struct
+		if field.Anonymous() {
+			fieldType := field.Type()
+			if fieldType.Kind() == reflect.Struct {
+				parseStructField(fieldType.(*reflect2.UnsafeStructType), fieldMap)
+			}
 		}
-		fieldMap[mapKey] = field.Name()
+
+		tag, ok := parseJsonTag(&field)
+		if !ok { // no json tag found, use field name as key
+			fieldMap[field.Name()] = field.Name()
+		} else if !tag.omit { // json tag found and not a omitted field
+			if tag.name == "" {
+				fieldMap[field.Name()] = field.Name()
+			} else {
+				fieldMap[tag.name] = field.Name()
+			}
+		}
 	}
+}
+
+func parseStructFieldName(structType *reflect2.UnsafeStructType) map[string]string {
+	fieldMap := make(map[string]string)
+	parseStructField(structType, fieldMap)
 	return fieldMap
 }
 
