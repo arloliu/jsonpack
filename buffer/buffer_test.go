@@ -28,7 +28,8 @@ func TestVarInt(t *testing.T) {
 	nums := [...]int64{0, 127, 128, 16384, math.MinInt64, math.MaxInt64}
 
 	for _, num := range nums {
-		n := buf.WriteVarInt(num)
+		n := ByteLenVarInt(num)
+		buf.WriteVarInt(num)
 		buf.Seek(-n, true)
 		v, n2 := buf.ReadVarInt()
 		if v != num || int64(n2) != n {
@@ -41,7 +42,8 @@ func TestVarUint(t *testing.T) {
 	nums := [...]uint64{0, 127, 128, 16384, math.MaxUint64}
 
 	for _, num := range nums {
-		n := buf.WriteVarUint(num)
+		n := ByteLenVarUint(num)
+		buf.WriteVarUint(num)
 		buf.Seek(-n, true)
 		v, n2 := buf.ReadVarUint()
 		if v != num || n != int64(n2) {
@@ -76,7 +78,7 @@ func TestStringPtr(t *testing.T) {
 	}
 }
 
-func TestFloat32Types(t *testing.T) {
+func TestFloatTypes(t *testing.T) {
 	buf := Create(1)
 	inFloat32 := []float32{1.3, math.MaxFloat32}
 	inFloat64 := []float64{1.3, 123141.32, math.MaxFloat64}

@@ -1,4 +1,8 @@
 //nolint:gosec
+// Package buffer provides a easy way to manipulate byte slices.
+//
+// It's always annoying to calculate offset, ensure buffer is large enough ...etc,
+// this package wraps annoying operations and lets programmer happy.
 package buffer
 
 import (
@@ -6,9 +10,8 @@ import (
 	"unsafe"
 )
 
-// Buffer a buffer instance
+// Buffer is a variable-sized buffer of bytes, provides methods for generic buffer operations
 type Buffer struct {
-	// crunch.Buffer
 	buf    []byte
 	offset int64
 	cap    int64
@@ -17,21 +20,26 @@ type Buffer struct {
 
 // Create a new Buffer with buffer size
 func Create(size int64) *Buffer {
+	var cap int64 = size
+	if cap < 64 {
+		cap = 64
+	}
 	buf := Buffer{
-		buf:    make([]byte, size),
+		buf:    make([]byte, size, cap),
 		offset: 0x0,
 	}
-	buf.Update()
+	buf.update()
 	return &buf
 }
 
+// From returns a buffer instance with the byte slice provided.
 func From(data []byte) *Buffer {
 	buf := Buffer{
 		buf:    data,
 		offset: 0x0,
 	}
 
-	buf.Update()
+	buf.update()
 	return &buf
 }
 
@@ -50,7 +58,7 @@ func (b *Buffer) Offset() int64 {
 	return b.offset
 }
 
-// Grow makes the buffer's capacity bigger by n bytes
+// Grow grows the buffer's capacity, if necessary, to guarantee space for another n bytes.
 func (b *Buffer) Grow(n int64) {
 	if n < 0 {
 		panic(BufferInvalidByteCountError)
@@ -59,23 +67,23 @@ func (b *Buffer) Grow(n int64) {
 	bufCap := int64(cap(b.buf))
 	if n <= bufCap-b.cap {
 		b.buf = b.buf[:b.cap+n]
-		b.Update()
+		b.update()
 		return
 	}
 	// grow capacity twice larger than length to decrese freq. of copy
 	newBuf := make([]byte, b.cap+n, (bufCap+n)*2)
 	copy(newBuf, b.buf)
 	b.buf = newBuf
-	b.Update()
+	b.update()
 
 }
 
-// Seal return slice which seals to current offset
+// Seal returns the slice of bytes which seals to current offset
 func (b *Buffer) Seal() []byte {
 	return b.buf[:b.offset]
 }
 
-// EnsureCap ensure there are enough capacity to access
+// EnsureCap ensures there are enough capacity to access, to guarantee space for another n bytes.
 func (b *Buffer) EnsureCap(n int64) {
 	if b.cap-b.offset >= n {
 		return
@@ -83,7 +91,7 @@ func (b *Buffer) EnsureCap(n int64) {
 	b.Grow(b.offset + n - b.cap)
 }
 
-// Seek seeks to position off of the buffer
+// Seek seeks to the offset of the buffer relative to current position or seeks to absolute position.
 func (b *Buffer) Seek(offset int64, relative bool) {
 	var pos int64
 	if relative {
@@ -97,8 +105,9 @@ func (b *Buffer) Seek(offset int64, relative bool) {
 	b.offset = pos
 }
 
-// UnsafeSeek seeks to position off of the buffer without boundary checking
-func (b *Buffer) UnsafeSeek(offset int64, relative bool) {
+// SeekUnsafe seeks to the offset of the buffer relative to current position or seeks to absolute position.
+// without boundary checking.
+func (b *Buffer) SeekUnsafe(offset int64, relative bool) {
 	if relative {
 		b.offset += offset
 	} else {
@@ -106,18 +115,26 @@ func (b *Buffer) UnsafeSeek(offset int64, relative bool) {
 	}
 }
 
-// WriteByte writes byte to the buffer at the current offset and moves
-// forward the amount of bytes written
-//nolint
-func (b *Buffer) WriteByte(data byte) {
+// WriteByte writes a byte to the buffer at current offset
+// and moves the offset forward 1 byte.
+//
+// This method will ensure buffer capacity is enough to write data.
+//
+// This method returns current Buffer instance for chainable operation.
+func (b *Buffer) WriteByte(data byte) *Buffer {
 	b.EnsureCap(1)
 	b.buf[b.offset] = data
-	b.UnsafeSeek(1, true)
+	b.offset += 1
+	return b
 }
 
-// WriteBytes writes bytes to the buffer at the current offset and moves
-// forward the amount of bytes written
-func (b *Buffer) WriteBytes(data []byte) {
+// WriteBytes writes slice of byte to the buffer at current offset
+// and moves the offset forward the amount of bytes written.
+//
+// This method will ensure buffer capacity is enough to write data.
+//
+// This method returns current Buffer instance for chainable operation.
+func (b *Buffer) WriteBytes(data []byte) *Buffer {
 	var writeLen int64 = int64(len(data))
 	b.EnsureCap(writeLen)
 
@@ -127,8 +144,14 @@ func (b *Buffer) WriteBytes(data []byte) {
 		*(*byte)(unsafe.Pointer(uintptr(ptr) + uintptr(i))) = data[i]
 	}
 	b.offset += writeLen
+	return b
 }
 
+// ReadByte reads a byte from the buffer at current offset
+// and moves the offset forward 1 byte.
+//
+// If the offset is invalid or not safe to read data,
+// it will panic with BufferOverreadError or BufferUnderreadError.
 func (b *Buffer) ReadByte() byte {
 	if b.offset >= b.cap {
 		panic(BufferOverreadError)
@@ -140,6 +163,20 @@ func (b *Buffer) ReadByte() byte {
 	return b.buf[b.offset-1]
 }
 
+// ReadByteUnsafe reads a byte from the buffer at current offset
+// and moves the offset forward 1 byte.
+//
+// This method doesn't check the read safety.
+func (b *Buffer) ReadByteUnsafe() byte {
+	b.offset += 1
+	return b.buf[b.offset-1]
+}
+
+// ReadByte reads n bytes from the buffer at current offset
+// and moves the offset forward n byte.
+//
+// If the offset is invalid or not safe to read data,
+// it will panic with BufferOverreadError or BufferUnderreadError.
 func (b *Buffer) ReadBytes(n int64) []byte {
 	if (b.offset + n) > b.cap {
 		panic(BufferOverreadError)
@@ -152,10 +189,20 @@ func (b *Buffer) ReadBytes(n int64) []byte {
 	return d
 }
 
+// ReadBytesUnsafe reads n bytes from the buffer at current offset
+// and moves the offset forward n byte.
+//
+// This method doesn't check the read safety.
+func (b *Buffer) ReadBytesUnsafe(n int64) []byte {
+	d := b.buf[b.offset : b.offset+n]
+	b.offset += n
+	return d
+}
+
 /******************
  * Varint Routine *
  ******************/
-// ByteLenVarUint get size of varuint number
+// ByteLenVarUint returns the byte length of variant integer number
 func ByteLenVarUint(x uint64) int64 {
 	switch {
 	case x < 128: // 2^7
@@ -180,7 +227,7 @@ func ByteLenVarUint(x uint64) int64 {
 	return 10
 }
 
-// ByteLenVarInt get size of varint number
+// ByteLenVarInt returns the byte length of unsigned variant integer number
 func ByteLenVarInt(x int64) int64 {
 	var y uint64
 	if x >= 0 {
@@ -281,27 +328,24 @@ func writeVarInt(b []byte, x int64) int64 {
 
 // WriteVarUint write varuint to the buffer at the current offset
 // and moves the offset forward the amount of bytes written.
-// Returns number of bytes written
-func (b *Buffer) WriteVarUint(x uint64) int64 {
+//
+// This method returns current Buffer instance for chainable operation.
+func (b *Buffer) WriteVarUint(x uint64) *Buffer {
 	b.EnsureCap(10)
-	// n := binary.PutUvarint(b.buf[b.offset:], x)
 	n := writeVarUint(b.buf[b.offset:], x)
-	b.UnsafeSeek(int64(n), true)
-
-	return int64(n)
+	b.offset += n
+	return b
 }
 
 // WriteVarInt write varint to the buffer at the current offset
 // and moves the offset forward the amount of bytes written.
-// Returns number of bytes written
-func (b *Buffer) WriteVarInt(x int64) int64 {
+//
+// This method returns current Buffer instance for chainable operation.
+func (b *Buffer) WriteVarInt(x int64) *Buffer {
 	b.EnsureCap(10)
-	// n := binary.PutVarint(b.buf[b.offset:], x)
 	n := writeVarInt(b.buf[b.offset:], x)
 	b.offset += int64(n)
-	// b.UnsafeSeek(int64(n), true)
-
-	return int64(n)
+	return b
 }
 
 // ReadVarUint reads a varuint from the buffer at the current offset
@@ -311,7 +355,7 @@ func (b *Buffer) ReadVarUint() (uint64, int) {
 	if n <= 0 {
 		return 0, n
 	}
-	b.UnsafeSeek(int64(n), true)
+	b.offset += int64(n)
 	return result, n
 }
 
@@ -322,20 +366,24 @@ func (b *Buffer) ReadVarInt() (int64, int) {
 	if n <= 0 {
 		return 0, n
 	}
-	b.UnsafeSeek(int64(n), true)
+	b.offset += int64(n)
 	return result, n
 }
 
-func (b *Buffer) WriteString(str *string) {
+// WriteString writes length of string and string data into buffer at
+// current offset and moves the offset forward the amount of bytes written.
+//
+// This method returns current Buffer instance for chainable operation.
+func (b *Buffer) WriteString(str *string) *Buffer {
 	writeLen := int64(len(*str))
 	b.WriteVarUint(uint64(writeLen))
 	// b.WriteBytes([]byte(*str))
 	b.WriteBytes(*(*[]byte)(unsafe.Pointer(str)))
+	return b
 }
 
 // ReadString reads packed string from the buffer at the current offset
 // and moves the offset forward the amount of bytes read.
-// Retrurns string instance
 func (b *Buffer) ReadString() string {
 	size, _ := b.ReadVarUint()
 	data := b.ReadBytes(int64(size))
@@ -352,16 +400,10 @@ func (b *Buffer) ReadStringPtr() *string {
 	return (*string)(unsafe.Pointer(&data)) //nolint:gosec
 }
 
-func (b *Buffer) Update() {
+// update will update capacity of buffer by current byte length of buffer
+func (b *Buffer) update() {
 	b.cap = int64(len(b.buf))
 	if len(b.buf) > 0 {
 		b.pbuf = unsafe.Pointer(&b.buf[0])
 	}
 }
-
-// func max(x, y int64) int64 {
-// 	if x > y {
-// 		return x
-// 	}
-// 	return y
-// }
