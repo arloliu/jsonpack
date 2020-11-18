@@ -1,0 +1,210 @@
+{
+  "type": "object",
+  "properties": {
+    "field_bool": {
+      "type": "boolean"
+    },
+    "field_bool_ptr": {
+      "type": "boolean"
+    },
+    "field_float32": {
+      "type": "float32le"
+    },
+    "field_float32_ptr": {
+      "type": "float32le"
+    },
+    "field_float64": {
+      "type": "float64le"
+    },
+    "field_float64_ptr": {
+      "type": "float64le"
+    },
+    "field_int16": {
+      "type": "int16le"
+    },
+    "field_int16_ptr": {
+      "type": "int16le"
+    },
+    "field_int32": {
+      "type": "int32le"
+    },
+    "field_int32_ptr": {
+      "type": "int32le"
+    },
+    "field_int64": {
+      "type": "int64le"
+    },
+    "field_int64_ptr": {
+      "type": "int64le"
+    },
+    "field_int8": {
+      "type": "int8"
+    },
+    "field_int8_ptr": {
+      "type": "int8"
+    },
+    "field_string": {
+      "type": "string"
+    },
+    "field_string_ptr": {
+      "type": "string"
+    },
+    "field_uint16": {
+      "type": "uint16le"
+    },
+    "field_uint16_ptr": {
+      "type": "uint16le"
+    },
+    "field_uint32": {
+      "type": "uint32le"
+    },
+    "field_uint32_ptr": {
+      "type": "uint32le"
+    },
+    "field_uint64": {
+      "type": "uint64le"
+    },
+    "field_uint64_ptr": {
+      "type": "uint64le"
+    },
+    "field_uint8": {
+      "type": "uint8"
+    },
+    "field_uint8_ptr": {
+      "type": "uint8"
+    },
+    "slice_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field_bool": {
+            "type": "boolean"
+          },
+          "field_bool_ptr": {
+            "type": "boolean"
+          },
+          "field_float32": {
+            "type": "float32le"
+          },
+          "field_float32_ptr": {
+            "type": "float32le"
+          },
+          "field_float64": {
+            "type": "float64le"
+          },
+          "field_float64_ptr": {
+            "type": "float64le"
+          },
+          "field_int16": {
+            "type": "int16le"
+          },
+          "field_int16_ptr": {
+            "type": "int16le"
+          },
+          "field_int32": {
+            "type": "int32le"
+          },
+          "field_int32_ptr": {
+            "type": "int32le"
+          },
+          "field_int64": {
+            "type": "int64le"
+          },
+          "field_int64_ptr": {
+            "type": "int64le"
+          },
+          "field_int8": {
+            "type": "int8"
+          },
+          "field_int8_ptr": {
+            "type": "int8"
+          },
+          "field_string": {
+            "type": "string"
+          },
+          "field_string_ptr": {
+            "type": "string"
+          },
+          "field_uint16": {
+            "type": "uint16le"
+          },
+          "field_uint16_ptr": {
+            "type": "uint16le"
+          },
+          "field_uint32": {
+            "type": "uint32le"
+          },
+          "field_uint32_ptr": {
+            "type": "uint32le"
+          },
+          "field_uint64": {
+            "type": "uint64le"
+          },
+          "field_uint64_ptr": {
+            "type": "uint64le"
+          },
+          "field_uint8": {
+            "type": "uint8"
+          },
+          "field_uint8_ptr": {
+            "type": "uint8"
+          }
+        },
+        "order": [
+          "field_bool",
+          "field_bool_ptr",
+          "field_int8",
+          "field_int8_ptr",
+          "field_int16",
+          "field_int16_ptr",
+          "field_int32",
+          "field_int32_ptr",
+          "field_int64",
+          "field_int64_ptr",
+          "field_uint8",
+          "field_uint8_ptr",
+          "field_uint16",
+          "field_uint16_ptr",
+          "field_uint32",
+          "field_uint32_ptr",
+          "field_uint64",
+          "field_uint64_ptr",
+          "field_float32",
+          "field_float32_ptr",
+          "field_float64",
+          "field_float64_ptr",
+          "field_string",
+          "field_string_ptr"
+        ]
+      }
+    }
+  },
+  "order": [
+    "field_bool",
+    "field_bool_ptr",
+    "field_int8",
+    "field_int8_ptr",
+    "field_int16",
+    "field_int16_ptr",
+    "field_int32",
+    "field_int32_ptr",
+    "field_int64",
+    "field_int64_ptr",
+    "field_uint8",
+    "field_uint8_ptr",
+    "field_uint16",
+    "field_uint16_ptr",
+    "field_uint32",
+    "field_uint32_ptr",
+    "field_uint64",
+    "field_uint64_ptr",
+    "field_float32",
+    "field_float32_ptr",
+    "field_float64",
+    "field_float64_ptr",
+    "field_string",
+    "field_string_ptr",
+    "slice_types"
+  ]
+}

@@ -21,6 +21,13 @@ var StructData TestStruct
 var StructExpData []byte
 var StructPbExpData []byte
 
+var TypesSchDef []byte
+var TypesRawData []byte
+var TypesAnyData interface{}
+var TypesMapData map[string]interface{}
+var TypesStructData Types
+var TypesExpData []byte
+
 var SliceSchDef []byte
 var SliceRawData []byte
 var SliceData []interface{}
@@ -39,6 +46,31 @@ func init() {
 	dataDir = path.Dir(filename)
 
 	var err error
+
+	TypesSchDef, _, err = loadJsonTextData("types.def.json")
+	if err != nil {
+		os.Exit(1)
+	}
+	TypesRawData, TypesMapData, err = loadJsonTextData("types.data.json")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	_, TypesAnyData, err = loadJsonTextAnyData("types.data.json")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	err = json.Unmarshal(TypesRawData, &TypesStructData)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	TypesExpData, err = loadRawTestData("types.bin")
+	if err != nil {
+		os.Exit(1)
+	}
+
 	ComplexSchDef, _, err = loadJsonTextData("complex.def.json")
 	if err != nil {
 		os.Exit(1)
@@ -48,10 +80,12 @@ func init() {
 	if err != nil {
 		os.Exit(1)
 	}
+
 	ComplexRawData, ComplexData, err = loadJsonTextData("complex.data.json")
 	if err != nil {
 		os.Exit(1)
 	}
+
 	err = json.Unmarshal(ComplexRawData, &ComplexStructData)
 	if err != nil {
 		os.Exit(1)
