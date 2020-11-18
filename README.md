@@ -1,12 +1,12 @@
 [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/arloliu/jsonpack)
-[![Go Report Card](https://goreportcard.com/badge/github.com/arloliu/jsonpack)](https://goreportcard.com/report/github.com/arloliu/jsonpack)
+[![Go Report Card](https://goreportcard.com/badge/github.com/arloliu/jsonpack?style=flat-square)](https://goreportcard.com/report/github.com/arloliu/jsonpack)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/arloliu/jsonpack/main/LICENSE)
 
 Fast and space efficiency JSON serialization golang library. It is a schema oriented design which leverages schema definition to encode JSON document into compact binary encoded format, and decodes back into JSON document.
 
 # Introduction
 When we want to exchange data between services or over network, the JSON is most popular format to do it.
-In golang world, the most convenient way is using official `encoding/json` package to marshal and unmarshal JSON document from/to struct or map. For usual RESTful web service scenario, JSON format is quite convenience and representative, but for real-time message exchanging or other scenarios that has small footprint data and low-letency requirement, JSON is a bit too heavyweight, not only data footprint is not space saving, but also has heavy loading in encode/decode procedure.
+In golang world, the most convenient way is using official `encoding/json` package to marshal and unmarshal JSON document from/to struct or map. For usual RESTful web service scenario, JSON format is quite convenience and representative, but for real-time message exchanging or other scenarios that has small footprint data and low-latency requirement, JSON is a bit too heavy weight, not only data footprint is not space saving, but also has heavy loading in encode/decode procedure.
 
 So if we want to a compact, small footprint data for exchanging over network, and also leverages the 
 convenience of JSON, we need an encoding format that removes "property name" and other notations likes ':', '[', '{'...etc from original JSON document, and leaves "value" only.
@@ -17,13 +17,13 @@ To achieve this goal, we need a schematic to define our JSON document and provid
 * Similar Marshal / Unmarshal API to standard `encoding/json` package.
 * Space saving encoded format, the size of encoded data is similar to Protocol Buffers, can be 30-80% of original JSON document, depends on data.
 * Blazing fast, provides about 3.x decoding speed compared to `protobuf` and many times than other JSON packages.
-* Memory saving design, avoids any un-neccessary memory allocations, suitable for embedded environment.
+* Memory saving design, avoids any un-necessary memory allocations, suitable for embedded environment.
 * Has production ready javascript implementation [Buffer Plus](https://github.com/arloliu/buffer-plus), can be used in node.js and Web browser environment.
 * No need to write schema definition by hand, `jsonpack` will generate schema definition from golang struct automatically.
 
 # How to Get
 ```
-go get https://github.com/arloliu/jsonpack
+go get github.com/arloliu/jsonpack
 ```
 # Usage
 
@@ -116,10 +116,18 @@ Benchmark code is [here](https://github.com/arloliu/jsonpack/blob/main/benchmark
 
 The benchmark result indicates jsonpack keeps constant performance on both encoding and encoding side, and keeps very low memory allocation size and times.
 
-The benchmark result also delivers an important message.
+## Explanation of Benchmark Result
+The benchmark result also delivers some important messages.
 
-**The performance of operating with golang map sucks**
+1. The performance of operating with golang map sucks.
+2. The pointer of type likes `*string`, `*int32` cost twice of time.
+3. Golang reflection is expensive, `reflect.ValueOf(...)` is very expensive.
 
-So it's better to use struct if possible. :)
+# Performance Tips
+According to the explanation of benchmarking and some tests during the implementation stage of this library, there are some suggestions in the following.
+1. It's better to use struct instead of map for encode/decode if possible.
+2. When declares struct fields, declares it as value instead of pointer to value gives performance gain.
+3. Designs a small and compacted structure, uses number type to represent enum. fields instead of declares it as string type.
+
 
 
