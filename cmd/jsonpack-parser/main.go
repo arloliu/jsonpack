@@ -1,3 +1,19 @@
+/*
+jsonpack-parser is a tool to generate jsonpack schema definition from specified package and struct name.
+
+Usage: jsonpack-parser -s <PACKAGE_DIR> -n <STRUCT_NAME> [options]
+
+<PACKAGE_DIR> is the package directory which contains golang source files.
+
+<STRUCT_NAME> is the structure name that want to generate schema defintion.
+
+Optional Options
+-o: output file name for schema definition, program will output to stdout if this option not specified
+
+-p: prettify output JSON text of schema definition with indentation
+
+-h: print help
+*/
 package main
 
 import (
@@ -62,7 +78,7 @@ func init() {
 	flag.StringVar(&params.structName, "n", "", "the struct name in package which want to generate schema definition")
 	flag.StringVar(&params.outputFile, "o", "", "output file name for schema definition, program will output to stdout if this option not specified")
 	flag.BoolVar(&params.bigEndian, "b", false, "generate number type with big-endian byte order, default is little-endian if this option not set")
-	flag.BoolVar(&params.pretty, "p", false, "output JSON text of schema definition with indentation")
+	flag.BoolVar(&params.pretty, "p", false, "prettify output JSON text of schema definition with indentation")
 
 	flag.Parse()
 
@@ -194,6 +210,11 @@ func (p *packageInfo) parseStruct(fileInfo *pkgFileInfo, stAst *ast.StructType) 
 		var fieldName string
 		if len(field.Names) > 0 && field.Names[0] != nil {
 			fieldName = parseFieldName(field.Names[0].Name, field.Tag)
+		}
+
+		// omitted field
+		if fieldName == "-" {
+			continue
 		}
 
 		// embedded struct field
@@ -375,6 +396,10 @@ func mergeEmbedField(name string, dst *SchemaDef, embed *SchemaDef) error {
 	if embed == nil {
 		return nil
 	}
+	// omitted field
+	if name == "-" {
+		return nil
+	}
 	if embed.Type == "object" {
 		for _, fieldName := range embed.Order {
 			if _, ok := dst.Properties[fieldName]; ok {
@@ -472,7 +497,7 @@ func main() {
 	}
 
 	if params.outputFile != "" {
-		f, fErr := os.OpenFile(params.outputFile, os.O_WRONLY|os.O_CREATE, 0644) //nolint:gosec
+		f, fErr := os.OpenFile(params.outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644) //nolint:gosec
 		if fErr != nil {
 			fmt.Fprintf(os.Stderr, "Open output file %s fail, err: %v\n", params.outputFile, err)
 			os.Exit(1)
@@ -483,7 +508,6 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Write schema definition to output file %s fail, err: %v\n", params.outputFile, err)
 			os.Exit(1)
 		}
-
 		_ = f.Close()
 		fmt.Printf("Schema definition has generated to output file %s\n", params.outputFile)
 	} else {
