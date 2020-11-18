@@ -42,7 +42,7 @@ func (s *schemaManager) getAllSchemaDefs() map[string]*SchemaDef {
 }
 
 // getAllSchemaDefTexts returns a map which contains all existed schema text definitions,
-// key of map it schema name, and value of map is text format of schema defintion, which
+// key of map it schema name, and value of map is text format of schema definition, which
 // presented as []byte.
 func (s *schemaManager) getAllSchemaDefTexts() map[string][]byte {
 	schDefTexts := make(map[string][]byte)

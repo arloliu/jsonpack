@@ -31,9 +31,9 @@ func (e *WrongTypeError) Error() string {
 	return fmt.Sprintf("wrong data type '%s'", e.DataType)
 }
 
-// UnknownTypeError is returned when un-supported data type found, it happends in AddSchema method.
+// UnknownTypeError is returned when un-supported data type found, it happens in AddSchema method.
 type UnknownTypeError struct {
-	DataType string // data type that un-supported by schema defintion
+	DataType string // data type that un-supported by schema definition
 }
 
 func (e *UnknownTypeError) Error() string {
@@ -60,7 +60,7 @@ func (e *StructFieldNonExistError) Error() string {
 	return fmt.Sprintf("struct %s doesn't contain required field: '%s'", e.Name, e.Field)
 }
 
-// SchemaNonExistError indicates an error that occurs when pre-compiled schema defintion does not exist.
+// SchemaNonExistError indicates an error that occurs when pre-compiled schema definition does not exist.
 type SchemaNonExistError struct {
 	Name string // schema name
 }

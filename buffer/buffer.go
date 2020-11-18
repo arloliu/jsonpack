@@ -1,4 +1,3 @@
-//nolint:gosec
 // Package buffer provides a easy way to manipulate byte slices.
 //
 // It's always annoying to calculate offset, ensure buffer is large enough ...etc,

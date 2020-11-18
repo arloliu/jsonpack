@@ -5,7 +5,7 @@ Usage: jsonpack-parser -s <PACKAGE_DIR> -n <STRUCT_NAME> [options]
 
 <PACKAGE_DIR> is the package directory which contains golang source files.
 
-<STRUCT_NAME> is the structure name that want to generate schema defintion.
+<STRUCT_NAME> is the structure name that want to generate schema definition.
 
 Optional Options
 -o: output file name for schema definition, program will output to stdout if this option not specified
@@ -70,7 +70,7 @@ var params paramSet
 func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: jsonpack-parser -s <PACKAGE_DIR> -n <STRUCT_NAME> [options]\n")
-		fmt.Fprintf(os.Stderr, "jsonpack-parser is a helper tool to generate schema defintion text from struct in package.\n\n")
+		fmt.Fprintf(os.Stderr, "jsonpack-parser is a helper tool to generate schema definition text from struct in package.\n\n")
 		fmt.Fprintf(os.Stderr, "Available options:\n\n")
 		flag.PrintDefaults()
 	}

@@ -178,7 +178,7 @@ func (p *JSONPack) GetAllSchemaDefs() map[string]*SchemaDef {
 }
 
 // GetAllSchemaDefTexts returns a map which contains all existed schema text definitions,
-// key of map it schema name, and value of map is text format of schema defintion which
+// key of map it schema name, and value of map is text format of schema definition which
 // presented as []byte.
 func (p *JSONPack) GetAllSchemaDefTexts() map[string][]byte {
 	return p.schemaManager.getAllSchemaDefTexts()

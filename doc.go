@@ -1,5 +1,5 @@
 /*
-Fast and space efficiency JSON serialization golang library.
+Package jsonpack is a fast and space efficiency JSON serialization golang library.
 It is a schema oriented design which leverages schema definition to encode
 JSON document into compact binary encoded format, and decodes back into JSON document.
 
@@ -31,7 +31,7 @@ Key Features
 
 * Blazing fast, provides about 3.x decoding speed compared to `protobuf` and many times than other JSON packages.
 
-* Memory saving design, avoids any un-neccessary memory allocations, suitable for embedded environment.
+* Memory saving design, avoids any un-necessary memory allocations, suitable for embedded environment.
 
 * Has production ready javascript implementation https://github.com/arloliu/buffer-plus, can be used in node.js and Web browser environment.
 

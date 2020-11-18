@@ -23,7 +23,7 @@ type Schema struct {
 	Name string
 	// rawData stores schema definition from user, can be map, struct, string or slice of byte
 	rawData interface{}
-	// textData stores text json format of schema defintion
+	// textData stores text json format of schema definition
 	textData      []byte
 	rootOp        *operation
 	structOpCache *sync.Map
@@ -388,9 +388,8 @@ func (s *Schema) getTypeFromKind(kind reflect.Kind) string {
 	case reflect.Int:
 		if uintSize == 32 {
 			return s.getTypeEndian("int32")
-		} else {
-			return s.getTypeEndian("int64")
 		}
+		return s.getTypeEndian("int64")
 	case reflect.Int8:
 		return "uint8"
 	case reflect.Int16:
@@ -402,9 +401,8 @@ func (s *Schema) getTypeFromKind(kind reflect.Kind) string {
 	case reflect.Uint:
 		if uintSize == 32 {
 			return s.getTypeEndian("uint32")
-		} else {
-			return s.getTypeEndian("uint64")
 		}
+		return s.getTypeEndian("uint64")
 	case reflect.Uint8:
 		return "uint8"
 	case reflect.Uint16:
