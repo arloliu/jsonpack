@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	ibuf "github.com/arloliu/jsonpack/buffer"
+	"github.com/pkg/errors"
 
 	"github.com/modern-go/reflect2"
 )
@@ -52,16 +53,16 @@ const (
 type nullOp struct{}
 
 func (p *nullOp) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr unsafe.Pointer) error {
-	return &NotImplementedError{"nullOp.decodeStruct"}
+	return errors.WithStack(&NotImplementedError{"nullOp.decodeStruct"})
 }
 func (p *nullOp) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr unsafe.Pointer) error {
-	return &NotImplementedError{"nullOp.encodeStruct"}
+	return errors.WithStack(&NotImplementedError{"nullOp.encodeStruct"})
 }
 func (p *nullOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{}) error {
-	return &NotImplementedError{"nullOp.encodeDynamic"}
+	return errors.WithStack(&NotImplementedError{"nullOp.encodeDynamic"})
 }
 func (p *nullOp) decodeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
-	return nil, &NotImplementedError{"nullOp.decodeDynamic"}
+	return nil, errors.WithStack(&NotImplementedError{"nullOp.decodeDynamic"})
 }
 
 // declare operation variables for type alias
@@ -223,7 +224,7 @@ func encodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{
 				}
 			}
 		} else {
-			return &WrongTypeError{fmt.Sprintf("%T", data)}
+			return errors.WithStack(&WrongTypeError{fmt.Sprintf("%T", data)})
 		}
 	}
 
@@ -274,7 +275,7 @@ func decodeSliceMapDynamic(buf *ibuf.Buffer, opNode *operation, ptr *[]map[strin
 		}
 		m[i], ok = result.(map[string]interface{})
 		if !ok {
-			return nil, &TypeAssertionError{Data: result, ExpectedType: "map[string]interface{}"}
+			return nil, errors.WithStack(&TypeAssertionError{Data: result, ExpectedType: "map[string]interface{}"})
 		}
 	}
 
@@ -294,7 +295,7 @@ func decodeSliceTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) 
 	case []map[string]interface{}:
 		return decodeSliceMapDynamic(buf, opNode, &ptr)
 	}
-	return nil, &WrongTypeError{reflect.TypeOf(v).Name()}
+	return nil, errors.WithStack(&WrongTypeError{reflect.TypeOf(v).String()})
 }
 
 func decodeArrayTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
@@ -306,7 +307,7 @@ func decodeArrayTypeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) 
 
 	val := reflect.ValueOf(v).Elem()
 	if val.Len() < int(size) {
-		return nil, fmt.Errorf("the capacity of array of decode target less than data")
+		return nil, errors.Errorf("the capacity of array of decode target less than data")
 	}
 
 	m = val.Slice(0, int(size)).Interface().([]interface{})

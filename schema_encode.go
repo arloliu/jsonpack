@@ -1,9 +1,9 @@
 package jsonpack
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
+
+	"github.com/pkg/errors"
 
 	ibuf "github.com/arloliu/jsonpack/buffer"
 
@@ -58,9 +58,9 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 		if r := recover(); r != nil {
 			switch r := r.(type) {
 			case string:
-				err = &EncodeError{s.Name, errors.New(r)}
+				err = errors.WithStack(&EncodeError{s.Name, errors.New(r)})
 			case error:
-				err = &EncodeError{s.Name, r}
+				err = errors.WithStack(&EncodeError{s.Name, r})
 			}
 		}
 	}()
@@ -98,7 +98,7 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 			var sop *structOperation
 			sop, err = s.getStructOperation(dType, d)
 			if err != nil {
-				err = &EncodeError{s.Name, err}
+				err = errors.WithStack(&EncodeError{s.Name, err})
 				return
 			}
 			err = s.encodeStruct(buf, sop, d)
@@ -111,7 +111,7 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 				var sop *structOperation
 				sop, err = s.getStructOperation(dType, d)
 				if err != nil {
-					err = &EncodeError{s.Name, err}
+					err = errors.WithStack(&EncodeError{s.Name, err})
 					return
 				}
 				err = s.encodeStruct(buf, sop, d)
@@ -120,7 +120,7 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 				err = s.encodeDynamic(buf, s.rootOp, d)
 
 			default:
-				return &EncodeError{s.Name, &WrongTypeError{dType.String()}}
+				return errors.WithStack(&EncodeError{s.Name, &WrongTypeError{dType.String()}})
 			}
 
 		case reflect.Array:
@@ -131,7 +131,7 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 				var sop *structOperation
 				sop, err = s.getStructOperation(dType, d)
 				if err != nil {
-					err = &EncodeError{s.Name, err}
+					err = errors.WithStack(&EncodeError{s.Name, err})
 					return
 				}
 				err = s.encodeStruct(buf, sop, d)
@@ -140,20 +140,20 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 				err = s.encodeDynamic(buf, s.rootOp, d)
 
 			default:
-				return &EncodeError{s.Name, &WrongTypeError{dType.String()}}
+				return errors.WithStack(&EncodeError{s.Name, &WrongTypeError{dType.String()}})
 			}
 
 		case reflect.Ptr:
 			elemType := toPtrElemType(dType)
 			return s.EncodeTo(elemType.Indirect(d), dataPtr)
 		default:
-			err = &EncodeError{s.Name, &WrongTypeError{dType.String()}}
+			err = errors.WithStack(&EncodeError{s.Name, &WrongTypeError{dType.String()}})
 			return
 		}
 	}
 
 	if err != nil {
-		err = &EncodeError{s.Name, err}
+		err = errors.WithStack(&EncodeError{s.Name, err})
 		return
 	}
 
@@ -166,14 +166,14 @@ func (s *Schema) EncodeTo(d interface{}, dataPtr *[]byte) (err error) {
 
 func (s *Schema) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, d interface{}) error {
 	if opNode.handler == nil {
-		return fmt.Errorf("opearation handler is nil")
+		return errors.Errorf("opearation handler is nil")
 	}
 	return opNode.handler.encodeStruct(buf, opNode, reflect2.PtrOf(d))
 }
 
 func (s *Schema) encodeDynamic(buf *ibuf.Buffer, opNode *operation, d interface{}) error {
 	if opNode.handler == nil {
-		return fmt.Errorf("opearation handler is nil")
+		return errors.Errorf("opearation handler is nil")
 	}
 	return opNode.handler.encodeDynamic(buf, opNode, d)
 }

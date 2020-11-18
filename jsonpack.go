@@ -1,5 +1,7 @@
 package jsonpack
 
+import "github.com/pkg/errors"
+
 // JSONPack provides top-level operations for schema.
 type JSONPack struct {
 	schemaManager *schemaManager
@@ -93,7 +95,7 @@ Example of adding new schema and build schema definition from struct:
 func (p *JSONPack) AddSchema(schemaName string, v ...interface{}) (*Schema, error) {
 	sch, err := p.schemaManager.add(schemaName, v...)
 	if err != nil {
-		return nil, &CompileError{schemaName, err}
+		return nil, errors.WithStack(&CompileError{schemaName, err})
 	}
 	return sch, nil
 }
@@ -103,7 +105,7 @@ func (p *JSONPack) AddSchema(schemaName string, v ...interface{}) (*Schema, erro
 func (p *JSONPack) Encode(schemaName string, v interface{}) ([]byte, error) {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
-		return nil, &SchemaNonExistError{schemaName}
+		return nil, errors.WithStack(&SchemaNonExistError{schemaName})
 	}
 	return schema.Encode(v)
 }
@@ -113,7 +115,7 @@ func (p *JSONPack) Encode(schemaName string, v interface{}) ([]byte, error) {
 func (p *JSONPack) EncodeTo(schemaName string, v interface{}, dataPtr *[]byte) error {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
-		return &SchemaNonExistError{schemaName}
+		return errors.WithStack(&SchemaNonExistError{schemaName})
 	}
 	return schema.EncodeTo(v, dataPtr)
 }
@@ -123,7 +125,7 @@ func (p *JSONPack) EncodeTo(schemaName string, v interface{}, dataPtr *[]byte) e
 func (p *JSONPack) Decode(schemaName string, data []byte, v interface{}) error {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
-		return &SchemaNonExistError{schemaName}
+		return errors.WithStack(&SchemaNonExistError{schemaName})
 	}
 	return schema.decode(data, v, true)
 }
@@ -148,7 +150,7 @@ func (p *JSONPack) GetSchema(schemaName string) *Schema {
 func (p *JSONPack) GetSchemaDef(schemaName string) (*SchemaDef, error) {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
-		return nil, &SchemaNonExistError{schemaName}
+		return nil, errors.WithStack(&SchemaNonExistError{schemaName})
 	}
 	return schema.GetSchemaDef()
 }
@@ -158,7 +160,7 @@ func (p *JSONPack) GetSchemaDef(schemaName string) (*SchemaDef, error) {
 func (p *JSONPack) GetSchemaDefText(schemaName string) ([]byte, error) {
 	schema := p.schemaManager.get(schemaName)
 	if schema == nil {
-		return nil, &SchemaNonExistError{schemaName}
+		return nil, errors.WithStack(&SchemaNonExistError{schemaName})
 	}
 	return schema.textData, nil
 }

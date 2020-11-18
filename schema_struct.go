@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/modern-go/reflect2"
+	"github.com/pkg/errors"
 )
 
 func (s *Schema) getStructOperation(typ reflect2.Type, st interface{}) (*structOperation, error) {
@@ -61,7 +62,7 @@ func (s *Schema) _buildStructOperation(sop *structOperation, op *operation, typ 
 			childOp := newStructOperation(opNode.handler, opNode.handlerType)
 			childOp.field = structType.FieldByName(fieldMap[opNode.propName])
 			if childOp.field == nil {
-				return &StructFieldNonExistError{typ.String(), opNode.propName}
+				return errors.WithStack(&StructFieldNonExistError{typ.String(), opNode.propName})
 			}
 			// childOp.fieldType = childOp.field.Type()
 			err = s._buildStructOperation(childOp, opNode, childOp.field.Type())
@@ -95,7 +96,7 @@ func (s *Schema) _buildStructOperation(sop *structOperation, op *operation, typ 
 			}
 			sop.appendChild(childOp)
 		default:
-			return &UnknownTypeError{typ.String()}
+			return errors.WithStack(&UnknownTypeError{typ.String()})
 		}
 	default:
 		// do nothing with builtin operations
@@ -191,7 +192,7 @@ func toStructType(dType reflect2.Type) (*reflect2.UnsafeStructType, error) {
 		dKind = dType.Kind()
 	}
 	if dKind != reflect.Struct {
-		return nil, &WrongTypeError{dType.String()}
+		return nil, errors.WithStack(&WrongTypeError{dType.String()})
 	}
 
 	return dType.(*reflect2.UnsafeStructType), nil

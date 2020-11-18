@@ -5,6 +5,7 @@ import (
 
 	ibuf "github.com/arloliu/jsonpack/buffer"
 	"github.com/modern-go/reflect2"
+	"github.com/pkg/errors"
 )
 
 type structOp struct{}
@@ -68,8 +69,8 @@ func (p *structOp) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr u
 	return nil
 }
 func (p *structOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{}) error {
-	return &NotImplementedError{"structOp.encodeDynamic"}
+	return errors.WithStack(&NotImplementedError{"structOp.encodeDynamic"})
 }
 func (p *structOp) decodeDynamic(buf *ibuf.Buffer, opNode *operation, v interface{}) (interface{}, error) {
-	return nil, &NotImplementedError{"structOp.decodeDynamic"}
+	return nil, errors.WithStack(&NotImplementedError{"structOp.decodeDynamic"})
 }

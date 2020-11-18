@@ -2,10 +2,11 @@ package jsonpack
 
 import (
 	"encoding/json"
-	"errors"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 // ByteOrder represents the byte order of numeric type that will be encoded to and decoded from.
@@ -209,7 +210,7 @@ func (s *Schema) _buildFromStruct(st *SchemaDef, sType reflect.Type) error {
 	default:
 		st.Type = s.getTypeFromKind(sKind)
 		if st.Type == "" {
-			return &UnknownTypeError{sType.String()}
+			return errors.WithStack(&UnknownTypeError{sType.String()})
 		}
 	}
 
@@ -336,7 +337,7 @@ func (s *Schema) compileSchemaObject(schema map[string]interface{}, curOp *opera
 			newOp = newOperation(fieldName, handler, builtinOpHandlerTypes[propType])
 			curOp.children = append(curOp.children, newOp)
 		} else {
-			return &UnknownTypeError{propType}
+			return errors.WithStack(&UnknownTypeError{propType})
 		}
 		if err != nil {
 			return err
@@ -371,7 +372,7 @@ func (s *Schema) compileSchemaArray(schema map[string]interface{}, curOp *operat
 		newOp = newOperation("", handler, builtinOpHandlerTypes[itemType])
 		curOp.children = append(curOp.children, newOp)
 	} else {
-		return &UnknownTypeError{itemType}
+		return errors.WithStack(&UnknownTypeError{itemType})
 	}
 	return err
 }

@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	ibuf "github.com/arloliu/jsonpack/buffer"
+	"github.com/pkg/errors"
 )
 
 type stringOp struct{}
@@ -23,7 +24,7 @@ func (p *stringOp) encodeStruct(buf *ibuf.Buffer, opNode *structOperation, ptr u
 func (p *stringOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data interface{}) error {
 	d, ok := data.(string)
 	if !ok {
-		return &TypeAssertionError{data, "string"}
+		return errors.WithStack(&TypeAssertionError{data, "string"})
 	}
 	buf.WriteString(&d)
 
@@ -86,7 +87,7 @@ func (p *int8Op) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data interfa
 	case int8:
 		val = byte(data)
 	default:
-		return &TypeAssertionError{data, "int8"}
+		return errors.WithStack(&TypeAssertionError{data, "int8"})
 	}
 
 	buf.WriteByte(byte(val))
@@ -117,7 +118,7 @@ func (p *int16LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data inte
 	case float64:
 		val = int16(data)
 	default:
-		return &TypeAssertionError{data, "int16"}
+		return errors.WithStack(&TypeAssertionError{data, "int16"})
 	}
 	buf.WriteInt16LE(val)
 	return nil
@@ -146,7 +147,7 @@ func (p *int16BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data inte
 	case float64:
 		val = int16(data)
 	default:
-		return &TypeAssertionError{data, "int16"}
+		return errors.WithStack(&TypeAssertionError{data, "int16"})
 	}
 	buf.WriteInt16BE(val)
 	return nil
@@ -175,7 +176,7 @@ func (p *int32LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data inte
 	case float64:
 		val = int32(data)
 	default:
-		return &TypeAssertionError{data, "int32"}
+		return errors.WithStack(&TypeAssertionError{data, "int32"})
 	}
 	buf.WriteInt32LE(val)
 	return nil
@@ -204,7 +205,7 @@ func (p *int32BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data inte
 	case float64:
 		val = int32(data)
 	default:
-		return &TypeAssertionError{data, "int32"}
+		return errors.WithStack(&TypeAssertionError{data, "int32"})
 	}
 	buf.WriteInt32BE(val)
 	return nil
@@ -232,7 +233,7 @@ func (p *int64LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data inte
 	case float64:
 		val = int64(data)
 	default:
-		return &TypeAssertionError{data, "int64"}
+		return errors.WithStack(&TypeAssertionError{data, "int64"})
 	}
 	buf.WriteInt64LE(val)
 	return nil
@@ -260,7 +261,7 @@ func (p *int64BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data inte
 	case float64:
 		val = int64(data)
 	default:
-		return &TypeAssertionError{data, "int64"}
+		return errors.WithStack(&TypeAssertionError{data, "int64"})
 	}
 	buf.WriteInt64BE(val)
 	return nil
@@ -291,7 +292,7 @@ func (p *uint8Op) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data interf
 	case float64:
 		val = byte(data)
 	default:
-		return &TypeAssertionError{data, "uint8"}
+		return errors.WithStack(&TypeAssertionError{data, "uint8"})
 	}
 	buf.WriteByte(val)
 	return nil
@@ -319,7 +320,7 @@ func (p *uint16LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data int
 	case float64:
 		val = uint16(data)
 	default:
-		return &TypeAssertionError{data, "uint16"}
+		return errors.WithStack(&TypeAssertionError{data, "uint16"})
 	}
 	buf.WriteUint16LE(val)
 	return nil
@@ -347,7 +348,7 @@ func (p *uint16BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data int
 	case float64:
 		val = uint16(data)
 	default:
-		return &TypeAssertionError{data, "uint16"}
+		return errors.WithStack(&TypeAssertionError{data, "uint16"})
 	}
 	buf.WriteUint16BE(val)
 	return nil
@@ -375,7 +376,7 @@ func (p *uint32LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data int
 	case float64:
 		val = uint32(data)
 	default:
-		return &TypeAssertionError{data, "uint32"}
+		return errors.WithStack(&TypeAssertionError{data, "uint32"})
 	}
 	buf.WriteUint32LE(val)
 	return nil
@@ -404,7 +405,7 @@ func (p *uint32BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data int
 	case float64:
 		val = uint32(data)
 	default:
-		return &TypeAssertionError{data, "uint32"}
+		return errors.WithStack(&TypeAssertionError{data, "uint32"})
 	}
 	buf.WriteUint32BE(val)
 	return nil
@@ -433,7 +434,7 @@ func (p *uint64LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data int
 	case float64:
 		val = uint64(data)
 	default:
-		return &TypeAssertionError{data, "uint64"}
+		return errors.WithStack(&TypeAssertionError{data, "uint64"})
 	}
 	buf.WriteUint64LE(val)
 	return nil
@@ -461,7 +462,7 @@ func (p *uint64BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data int
 	case float64:
 		val = uint64(data)
 	default:
-		return &TypeAssertionError{data, "uint64"}
+		return errors.WithStack(&TypeAssertionError{data, "uint64"})
 	}
 	buf.WriteUint64BE(val)
 	return nil
@@ -492,7 +493,7 @@ func (p *float32LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data in
 	case float64:
 		val = float32(data)
 	default:
-		return &TypeAssertionError{data, "float32"}
+		return errors.WithStack(&TypeAssertionError{data, "float32"})
 	}
 	buf.WriteFloat32LE(val)
 	return nil
@@ -521,7 +522,7 @@ func (p *float32BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data in
 	case float64:
 		val = float32(data)
 	default:
-		return &TypeAssertionError{data, "float32"}
+		return errors.WithStack(&TypeAssertionError{data, "float32"})
 	}
 	buf.WriteFloat32BE(val)
 	return nil
@@ -548,7 +549,7 @@ func (p *float64LEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data in
 	case float64:
 		val = data
 	default:
-		return &TypeAssertionError{data, "float64"}
+		return errors.WithStack(&TypeAssertionError{data, "float64"})
 	}
 	buf.WriteFloat64LE(val)
 	return nil
@@ -575,7 +576,7 @@ func (p *float64BEOp) encodeDynamic(buf *ibuf.Buffer, opNode *operation, data in
 	case float64:
 		val = data
 	default:
-		return &TypeAssertionError{data, "float64"}
+		return errors.WithStack(&TypeAssertionError{data, "float64"})
 	}
 	buf.WriteFloat64BE(val)
 	return nil

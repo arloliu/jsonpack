@@ -2,6 +2,8 @@ package jsonpack
 
 import (
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 // schemaManager manages schema instances
@@ -81,7 +83,7 @@ func (s *schemaManager) add(name string, v ...interface{}) (*Schema, error) {
 func (s *schemaManager) remove(name string) error {
 	_, ok := s.schemas.LoadAndDelete(name)
 	if !ok {
-		return &SchemaNonExistError{name}
+		return errors.WithStack(&SchemaNonExistError{name})
 	}
 	return nil
 }

@@ -1,8 +1,9 @@
 package jsonpack
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -106,7 +107,7 @@ type DecodeError struct {
 }
 
 func (e *DecodeError) Error() string {
-	return fmt.Sprintf("decode with schema definition '%s' got error: %v", e.Name, e.Err.Error())
+	return fmt.Sprintf("decode with schema definition '%s' got error: %+v", e.Name, e.Err.Error())
 }
 
 // Unwrap returns the underlying error.

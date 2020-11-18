@@ -1,9 +1,9 @@
 package jsonpack
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
+
+	"github.com/pkg/errors"
 
 	ibuf "github.com/arloliu/jsonpack/buffer"
 
@@ -34,31 +34,31 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 		if r := recover(); r != nil {
 			switch r := r.(type) {
 			case string:
-				err = &DecodeError{s.Name, errors.New(r)}
+				err = errors.WithStack(&DecodeError{s.Name, errors.New(r)})
 			case error:
-				err = &DecodeError{s.Name, r}
+				err = errors.WithStack(&DecodeError{s.Name, r})
 			}
 		}
 	}()
 
 	if v == nil {
-		return &DecodeError{s.Name, errors.New("target of decoding is nil")}
+		return errors.WithStack(&DecodeError{s.Name, errors.New("target of decoding is nil")})
 	}
 
 	vType := reflect2.TypeOf(v)
 	if vType == nil {
-		return &DecodeError{s.Name, errors.New("invalid type of target")}
+		return errors.WithStack(&DecodeError{s.Name, errors.New("invalid type of target")})
 	}
 
 	vKind := vType.Kind()
 
 	if reflect2.IsNil(v) {
-		err = &DecodeError{s.Name, &WrongTypeError{vType.String()}}
+		err = errors.WithStack(&DecodeError{s.Name, &WrongTypeError{vType.String()}})
 		return
 	}
 
 	if checkPtrType && vKind != reflect.Ptr && vKind != reflect.Map {
-		err = &DecodeError{s.Name, &WrongTypeError{vType.String()}}
+		err = errors.WithStack(&DecodeError{s.Name, &WrongTypeError{vType.String()}})
 		return
 	}
 
@@ -92,7 +92,7 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 			var sop *structOperation
 			sop, err = s.getStructOperation(vType, v)
 			if err != nil {
-				return &DecodeError{s.Name, err}
+				return errors.WithStack(&DecodeError{s.Name, err})
 			}
 			return s.decodeStruct(buf, sop, v)
 
@@ -103,13 +103,13 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 				var sop *structOperation
 				sop, err = s.getStructOperation(vType, v)
 				if err != nil {
-					return &DecodeError{s.Name, err}
+					return errors.WithStack(&DecodeError{s.Name, err})
 				}
 				return s.decodeStruct(buf, sop, v)
 			} else if vType.Kind() == reflect.Map || vType.Kind() == reflect.Interface {
 				_, err = s.decodeDynamic(buf, s.rootOp, v)
 			} else {
-				return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
+				return errors.WithStack(&DecodeError{s.Name, &WrongTypeError{vType.String()}})
 			}
 
 		case reflect.Array:
@@ -119,7 +119,7 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 				var sop *structOperation
 				sop, err = s.getStructOperation(vType, v)
 				if err != nil {
-					return &DecodeError{s.Name, err}
+					return errors.WithStack(&DecodeError{s.Name, err})
 				}
 				return s.decodeStruct(buf, sop, v)
 			} else if vType.Kind() == reflect.Map || vType.Kind() == reflect.Interface {
@@ -128,7 +128,7 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 					return err
 				}
 			} else {
-				return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
+				return errors.WithStack(&DecodeError{s.Name, &WrongTypeError{vType.String()}})
 			}
 
 		case reflect.Ptr:
@@ -140,11 +140,11 @@ func (s *Schema) decode(data []byte, v interface{}, checkPtrType bool) (err erro
 			}
 
 		default:
-			return &DecodeError{s.Name, &WrongTypeError{vType.String()}}
+			return errors.WithStack(&DecodeError{s.Name, &WrongTypeError{vType.String()}})
 		}
 	}
 	if err != nil {
-		err = &DecodeError{s.Name, err}
+		err = errors.WithStack(&DecodeError{s.Name, err})
 	}
 	return
 }
@@ -155,7 +155,7 @@ func (s *Schema) decodeDynamic(buf *ibuf.Buffer, opNode *operation, d interface{
 
 func (s *Schema) decodeStruct(buf *ibuf.Buffer, opNode *structOperation, v interface{}) error {
 	if opNode.handler == nil {
-		return fmt.Errorf("opearation handler is nil")
+		return errors.Errorf("opearation handler is nil")
 	}
 	return opNode.handler.decodeStruct(buf, opNode, reflect2.PtrOf(v))
 }
