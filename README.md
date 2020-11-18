@@ -1,4 +1,5 @@
 [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/arloliu/jsonpack)
+[![Go Report Card](https://goreportcard.com/badge/github.com/arloliu/jsonpack)](https://goreportcard.com/report/github.com/arloliu/jsonpack)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/arloliu/jsonpack/main/LICENSE)
 
 Fast and space efficiency JSON serialization golang library. It is a schema oriented design which leverages schema definition to encode JSON document into compact binary encoded format, and decodes back into JSON document.
