@@ -44,9 +44,9 @@ sch, err := jsonPack.AddSchema("Info", Info{}, jsonpack.LittleEndian)
 
 Example of encoding data with `Info` struct
 ```go
-infoStruct := map[string]interface{} {
-	"name": "example name",
-	"area": uint32(888),
+infoStruct := &Info{
+    Name: "example name",
+    Area: 888,
 }
 // encodedResult1 contains encoded data,
 encodedResult1, err := jsonPack.Marshal("Info", infoStruct)
@@ -56,7 +56,7 @@ Example of encoding data with golang map
 ```go
 infoMap := map[string]interface{} {
 	"name": "example name",
-	"area": uint32(888),
+	"area": 888,
 }
 
 encodedResult2, err := jsonPack.Marshal("Info", infoMap)

@@ -20,21 +20,36 @@ a struct instance which added by AddSchema function.
 
 The return data contains encoded binary data that can then be decoded by Decode function.
 
-Example of encoding a map
+Before encode data into jsonpack encoding format, we need to create a jsonpack instance and create a schema.
+	// the Info struct we want to decode
+	type Info struct {
+		Name string `json:"name"`
+		Area uint32 `json:"area"`
+		// omit this field
+		ExcludeField string `-`
+	}
+	// create a new jsonpack instance
+	jsonPack := jsonpack.NewJSONPack()
+	// create schema with Info struct
+	sch, err := jsonPack.AddSchema("Info", Info{}, jsonpack.LittleEndian)
 
+If we want to encode a map with Info schema.
 	data := map[string]interface{} {
 		"name": "example name",
 		"area": uint32(888),
 	}
 
-	jsonPack := jsonpack.NewJSONPack()
-	// call jsonPack.AddSchema to register schema
-	sch := jsonPack.GetSchema("info")
-	result, err := sch.Encode(data)
+	// encodes data into encodedResult
+	encodedResult, err := sch.Encode(data)
 
-Example of encoding struct
+Or if we want to encode a Info struct instance with Info schema.
+	data := &Info{
+		Name: "example name",
+		Area: 888,
+	}
 
-	type Info struct
+	// encodes data into encodedResult
+	encodedResult, err := sch.Encode(infoStruct)
 */
 func (s *Schema) Encode(d interface{}) ([]byte, error) {
 	encodeData := make([]byte, s.encodeBufSize)

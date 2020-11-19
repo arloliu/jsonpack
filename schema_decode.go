@@ -19,6 +19,14 @@ function will return DecodeError.
 
 The valid type of v is either a *map[string]interface{} or a pointer to the struct
 which added by AddSchema function.
+
+Example of decoding data into map with "Info" schema
+	decodeInfoMap = make(map[string]interface{})
+	err := jsonPack.Decode("Info", encodedData, &decodeInfoMap)
+
+Example of decoding data into Info struct instance with "Info" schema
+	decodeInfoStruct = Info{}
+	err := jsonPack.Decode("Info", encodedData, &decodeInfoStruct)
 */
 func (s *Schema) Decode(data []byte, v interface{}) (err error) {
 	return s.decode(data, v, true)
